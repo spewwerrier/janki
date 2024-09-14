@@ -1,0 +1,16 @@
+- On register we generate new unique id on the server and save it on database
+  - insert into session (cookie_string, references(select id from users where name = username))
+  - unique id = id hash + username
+
+- We send that unique id to the client
+
+- Client saves it as a cookie
+  - cookie['id'] = unique_id
+
+- When user creates a knob
+  - take the cookie['id'] and check if its in database
+    - user_id = select users(id) from session where cookie_string = cookie['id']
+    - if not exists then redirect to a login page
+  - save the knob
+    - insert into knob_descriptions (user_id, time)
+    - insert into knob ( references(knob_description), details...)

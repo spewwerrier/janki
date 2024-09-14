@@ -1,0 +1,35 @@
+# user account
+/api/account/{user}
+/api/account/{user}/create
+/api/account/{user}/update
+/api/account/{user}/delete
+
+- username, icon, description, name, location, personal links
+
+# knob (single knob)
+/api/knob/{user}/workflow-1
+/api/knob/{user}/{workflow}/create
+/api/knob/{user}/{workflow}/update
+/api/knob/{user}/{workflow}/delete
+
+- topics
+- todos
+- things to remember
+- references
+- image/pdf
+- do you know yet? Ask question to yourself
+- write everything you know about the topic
+- suggest next topics to learn
+
+# stats knobs
+/api/stats/{user}
+
+- how many knobs has a user completed per day/week/month/year
+- easily shareable
+
+# fork knobs
+/api/knob/{user}/workflow-1?fork=1
+
+
+# NOTE
+Note that almost everything will have /c /u /r /d endpoints.
