@@ -1,0 +1,26 @@
+# production database
+services:
+  db_1:
+    image: postgres
+    restart: always
+    volumes:
+      - /var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: janki
+      POSTGRES_USER: janki
+      POSTGRES_DB: janki
+    ports:
+      - 5555:5432
+
+
+# test database
+  db_2:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: janki_test
+      POSTGRES_USER: janki_test
+      POSTGRES_DB: janki_test
+    ports:
+      - 5556:5432
+
