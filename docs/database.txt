@@ -2,14 +2,14 @@
 id | name | password 
 
 # users description
-id | user_id | creation | image_url | description | existing_knobs
-
-# knob_descriptions
-whenever a new knob gets created it is stored here
-id | user_id | creation | forkof
+ref users(id) | creation | image_url | description | existing_knobs
 
 # knob
-id | knob_id | knob_name | topics | todo | tor | refs | urls | ques | description | suggestions
+whenever a new knob gets created it is stored here
+id | ref users(id) | creation | forkof knob(id)
+
+# knob_descriptions
+ref knob (id) | knob_name | topics | todo | tor | refs | urls | ques | description | suggestions
 
 # session
 id | cookie_string | creation | ref users(id)
