@@ -24,7 +24,7 @@ func (d *Database) Create_db() error {
 	}
 
 	// UsersDescription
-	_, err = d.db.Exec("create table if not exists UsersDescriptions (user_id integer references Users(id) on delete cascade, creation timestamp default current_timestamp not null, image_url text, description text, existing_knobs text)")
+	_, err = d.db.Exec("create table if not exists UsersDescriptions (user_id integer references Users(id) on delete cascade, creation timestamp default current_timestamp not null, image_url text, description text, existing_knobs int)")
 	if err != nil {
 		return err
 	}
