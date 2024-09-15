@@ -6,7 +6,7 @@ ref users(id) | creation | image_url | description | existing_knobs
 
 # knob
 whenever a new knob gets created it is stored here
-id | ref users(id) | creation | forkof knob(id)
+id | ref users(id) | creation | forkof knob(id) | is public
 
 # knob_descriptions
 ref knob (id) | knob_name | topics | todo | tor | refs | urls | ques | description | suggestions
