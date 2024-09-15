@@ -2,8 +2,9 @@ package db
 
 import (
 	"database/sql"
-	_ "github.com/lib/pq"
 	"log"
+
+	_ "github.com/lib/pq"
 )
 
 func NewConnection(connection string) *Database {
@@ -18,7 +19,7 @@ func NewConnection(connection string) *Database {
 
 func (d *Database) Create_db() error {
 	// Users
-	_, err := d.db.Exec("create table if not exists Users (id serial primary key, name text not null, password text not null)")
+	_, err := d.db.Exec("create table if not exists Users (id serial primary key, username text not null, password text not null)")
 	if err != nil {
 		return err
 	}
@@ -42,7 +43,7 @@ func (d *Database) Create_db() error {
 	}
 
 	// Sessions
-	_, err = d.db.Exec("create table if not exists Sessions (id serial primary key, cookie_string text not null, creation timestamp default current_timestamp not null, user_id integer references Users(id) on delete cascade)")
+	_, err = d.db.Exec("create table if not exists Sessions (id serial primary key, session_key text not null, creation timestamp default current_timestamp not null, user_id integer references Users(id) on delete cascade)")
 	if err != nil {
 		return err
 	}

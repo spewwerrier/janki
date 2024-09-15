@@ -12,4 +12,4 @@ id | ref users(id) | creation | forkof knob(id) | is public
 ref knob (id) | knob_name | topics | todo | tor | refs | urls | ques | description | suggestions
 
 # session
-id | cookie_string | creation | ref users(id)
+id | session_key | creation | ref users(id)
