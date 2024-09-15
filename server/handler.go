@@ -9,6 +9,7 @@ func Handler(api *api.Api) *http.ServeMux {
 	h := http.NewServeMux()
 
 	h.HandleFunc("/users/create", api.Users.Create)
+	h.HandleFunc("/users/update", api.Users.UpdateUserDescription)
 	h.HandleFunc("/users/read", api.Users.Read)
 	h.HandleFunc("/users/", api.Users.Error)
 

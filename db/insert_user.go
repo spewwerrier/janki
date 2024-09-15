@@ -16,7 +16,7 @@ import (
 // 5 generate cookie
 // 6 check if duplicate user exists
 
-func (db *Database) CreateNewUser(username string, password string) (string, error) {
+func (db *Database) CreateNewUser(username string, password string, image_url string, description string) (string, error) {
 	does, err := db.CheckDuplicateUser(username)
 	if err != nil {
 		panic(err)
@@ -33,16 +33,79 @@ func (db *Database) CreateNewUser(username string, password string) (string, err
 			log.Panic(err)
 			return "", err
 		}
+		query = "insert into usersdescriptions (user_id, image_url, description) values ($1, $2, $3)"
+
+		user_id, err := db.GetUserId(session_key)
+		if err != nil {
+			return "", err
+		}
+		_, err = db.db.Exec(query, user_id, image_url, description)
+		if err != nil {
+			log.Panic(err)
+		}
 		return session_key, nil
 	}
 	return "", errors.New("duplicate user exists")
 }
 
-func (db *Database) UpdateUser(cookie string) error {
+func (db *Database) UpdateUser(session_key string, image_url string, description string) error {
+
+	query := "update usersdescriptions  set image_url = $1, description = $2 where user_id = $3"
+	id, err := db.GetUserId(session_key)
+	if err != nil {
+		return err
+	}
+	_, err = db.db.Exec(query, image_url, description, id)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (db *Database) CreateUserDescription(cookie string) error {
+func (db *Database) GetUserId(session_key string) (int, error) {
+
+	query := "select user_id from sessions where session_key = $1"
+	result, err := db.db.Query(query, session_key)
+	if err != nil {
+		return -1, err
+	}
+
+	var user_id int
+	var i int
+	for result.Next() {
+		i++
+		_ = result.Scan(&user_id)
+	}
+	if i > 1 {
+		return user_id, errors.New("multiple user exists")
+	}
+	return user_id, nil
+}
+
+func (db *Database) CreateUserDescription(session_key string, image_url string, description string) error {
+	user_id, err := db.GetUserId(session_key)
+	if err != nil {
+		return err
+	}
+
+	query := "select from usersdescriptions where user_id = $1"
+	result, err := db.db.Query(query, user_id)
+	if err != nil {
+		return err
+	}
+	var i int
+	for result.Next() {
+		i++
+	}
+	if i > 0 {
+		return errors.New("descriptions already exists")
+	}
+
+	query = "insert into usersdescriptions (user_id, image_url, description) values ($1, $2, $3)"
+	_, err = db.db.Exec(query, user_id, image_url, description)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

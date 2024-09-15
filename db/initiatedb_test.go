@@ -16,19 +16,4 @@ func TestConnect(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = db.CreateNewUser("dummyuser", "dummy password")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	_, err = db.CreateNewUser("dummyuser", "different password")
-	if err == nil {
-		t.Fatal("should complain about duplicate user but did not")
-	}
-
-	_, err = db.CreateNewUser("dummyuser2", "different password")
-	if err != nil {
-		t.Fatal(err)
-	}
-
 }

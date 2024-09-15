@@ -19,7 +19,7 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
-	session_key, err := u.DB.CreateNewUser(username, password)
+	session_key, err := u.DB.CreateNewUser(username, password, "https://example.com", "I am groot")
 	if err != nil {
 		_, _ = w.Write([]byte("duplicate user"))
 		fmt.Println(err)
@@ -32,6 +32,40 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &cookie)
 	_, _ = w.Write([]byte(cookie.Value))
+}
+
+func (u Users) CreateDescription(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Panic(err)
+	}
+	session_key := r.Form.Get("session_key")
+	image_url := r.Form.Get("image_url")
+	description := r.Form.Get("description")
+	err = u.DB.CreateUserDescription(session_key, image_url, description)
+	if err != nil {
+		log.Println(err)
+		_, _ = w.Write([]byte("cannot create again"))
+		return
+	}
+	_, _ = w.Write([]byte("created description"))
+}
+
+func (u Users) UpdateUserDescription(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Panic(err)
+	}
+	session_key := r.Form.Get("session_key")
+	image_url := r.Form.Get("image_url")
+	description := r.Form.Get("description")
+	err = u.DB.UpdateUser(session_key, image_url, description)
+	if err != nil {
+		log.Println(err)
+		_, _ = w.Write([]byte("cannot update description"))
+		return
+	}
+	_, _ = w.Write([]byte("updated description"))
 }
 
 func (u Users) Read(w http.ResponseWriter, r *http.Request) {
