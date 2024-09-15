@@ -44,17 +44,23 @@ func (db *Database) RetriveUserIdFromCredentials(username string, password strin
 }
 
 func (db *Database) RetriveUserSession(username string, password string) (string, error) {
-	query := "select id from users where username = $1 and password = $2"
-	result, err := db.db.Query(query, username, utils.Hash(password))
+	id, err := db.RetriveUserIdFromCredentials(username, password)
+	if err != nil {
+		return "", err
+	}
+	query := "select session_key from sessions where user_id = $1"
+	result, err := db.db.Query(query, id)
 	if err != nil {
 		log.Panic(err)
 		return "", err
 	}
 	var i int
+	var session_key string
 	for result.Next() {
+		_ = result.Scan(&session_key)
 		i++
 	}
-	return "", err
+	return session_key, err
 }
 
 func (db *Database) RetriveHashedPassword(username string) (string, error) {
@@ -80,8 +86,17 @@ func (db *Database) RetriveHashedPassword(username string) (string, error) {
 	return password, nil
 }
 
-func (db *Database) RetriveUserIdFromSession(cookie string) (int, error) {
-	return -1, nil
+func (db *Database) RetriveUserIdFromSession(session_key string) (int, error) {
+	query := "select user_id from users where session_key = $1"
+	result, err := db.db.Query(query, session_key)
+	if err != nil {
+		return -1, nil
+	}
+	var id int
+	for result.Next() {
+		_ = result.Scan(&id)
+	}
+	return id, nil
 }
 
 func (db *Database) RetriveUser(cookie string) (UsersDetails, error) {

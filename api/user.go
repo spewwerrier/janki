@@ -34,6 +34,23 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(cookie.Value))
 }
 
+func (u Users) Read(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Panic(err)
+	}
+	username := r.Form.Get("username")
+	password := r.Form.Get("password")
+	session_key, err := u.DB.RetriveUserSession(username, password)
+	if err != nil {
+		_, _ = w.Write([]byte("cannot retrive user id from the credentials"))
+		return
+	}
+	fmt.Println(session_key)
+	_, _ = w.Write([]byte(session_key))
+
+}
+
 func (u Users) Error(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("error on user"))
 }
