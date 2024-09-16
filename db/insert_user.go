@@ -1,10 +1,9 @@
 package db
 
 import (
-	"database/sql"
 	"errors"
+	jankilog "janki/logs"
 	"janki/utils"
-	"log"
 	"strconv"
 	"time"
 )
@@ -18,19 +17,21 @@ import (
 
 func (db *Database) CreateNewUser(username string, password string, image_url string, description string) (string, error) {
 	does, err := db.CheckDuplicateUser(username)
-	if err != nil {
-		panic(err)
+	if err == jankilog.ErrApiMultipleUsers {
+		return "", jankilog.ErrApiMultipleUsers
 	}
+
 	if !does {
 		query := "insert into users (username, password) values ($1, $2)"
 		_, err := db.db.Exec(query, username, utils.Hash(password))
 		if err != nil {
-			log.Panic(err)
+			db.log.Warning(err.Error())
+			return "", jankilog.ErrDbExecError
 		}
 
 		session_key, err := db.GenerateSessionKey(username, password)
 		if err != nil {
-			log.Panic(err)
+			db.log.Warning(err.Error())
 			return "", err
 		}
 		query = "insert into usersdescriptions (user_id, image_url, description) values ($1, $2, $3)"
@@ -41,8 +42,9 @@ func (db *Database) CreateNewUser(username string, password string, image_url st
 		}
 		_, err = db.db.Exec(query, user_id, image_url, description)
 		if err != nil {
-			log.Panic(err)
+			return "", jankilog.ErrDbExecError
 		}
+		db.log.Info("db: inserted new user " + username)
 		return session_key, nil
 	}
 	return "", errors.New("duplicate user exists")
@@ -67,7 +69,7 @@ func (db *Database) GetUserId(session_key string) (int, error) {
 	query := "select user_id from sessions where session_key = $1"
 	result, err := db.db.Query(query, session_key)
 	if err != nil {
-		return -1, err
+		return -1, jankilog.ErrDbQueryError
 	}
 
 	var user_id int
@@ -121,13 +123,14 @@ func (db *Database) GenerateSessionKey(username string, password string) (string
 	session_key := utils.Hash(username + password + strconv.Itoa(time.Now().Nanosecond()))
 	id, err := db.RetriveUserIdFromCredentials(username, password)
 	if err != nil {
-		log.Panic(err)
+		return "", err
 	}
 
 	sql := "insert into sessions (session_key, user_id) values ($1, $2)"
 	_, err = db.db.Exec(sql, session_key, id)
 	if err != nil {
-		log.Panic(err)
+		db.log.Warning(err.Error())
+		return "", jankilog.ErrDbExecError
 	}
 
 	return session_key, nil
@@ -135,8 +138,8 @@ func (db *Database) GenerateSessionKey(username string, password string) (string
 
 func (db *Database) CheckDuplicateUser(username string) (bool, error) {
 	_, err := db.RetriveUserIdFromCredentials(username, "")
-	if err == sql.ErrNoRows {
+	if err == jankilog.ErrApiUserNoExist {
 		return false, nil
 	}
-	return true, nil
+	return true, jankilog.ErrApiMultipleUsers
 }

@@ -1,11 +1,12 @@
 package db
 
 import (
+	jankilog "janki/logs"
 	"testing"
 )
 
 func TestGetUsers(t *testing.T) {
-	db := NewConnection("user=janki_test dbname=janki_test password=janki_test sslmode=disable port=5556")
+	db := NewConnection("user=janki_test dbname=janki_test password=janki_test sslmode=disable port=5556", "/tmp/testfile.log")
 
 	err := db.Create_db()
 	defer db.db.Close()
@@ -19,7 +20,7 @@ func TestGetUsers(t *testing.T) {
 	}
 
 	_, err = db.CreateNewUser("dummyuser", "different password", "groot", "groot")
-	if err == nil {
+	if err != jankilog.ErrApiMultipleUsers {
 		t.Fatal("should complain about duplicate user but did not")
 	}
 
@@ -31,7 +32,7 @@ func TestGetUsers(t *testing.T) {
 }
 
 func TestUserDescriptions(t *testing.T) {
-	db := NewConnection("user=janki_test dbname=janki_test password=janki_test sslmode=disable port=5556")
+	db := NewConnection("user=janki_test dbname=janki_test password=janki_test sslmode=disable port=5556", "/tmp/testfile.log")
 
 	err := db.Create_db()
 	defer db.db.Close()

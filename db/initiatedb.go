@@ -2,18 +2,21 @@ package db
 
 import (
 	"database/sql"
+	jankilog "janki/logs"
 	"log"
 
 	_ "github.com/lib/pq"
 )
 
-func NewConnection(connection string) *Database {
+func NewConnection(connection string, logfile string) *Database {
 	db, err := sql.Open("postgres", connection)
 	if err != nil {
 		log.Panic(err)
 	}
+	logs := jankilog.NewLogger(logfile)
 	return &Database{
-		db: db,
+		db:  db,
+		log: logs,
 	}
 }
 

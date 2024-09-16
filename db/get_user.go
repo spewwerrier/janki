@@ -1,11 +1,9 @@
 package db
 
 import (
-	"database/sql"
 	"errors"
-	"fmt"
+	jankilog "janki/logs"
 	"janki/utils"
-	"log"
 )
 
 // 1 user logins using username an password
@@ -15,32 +13,29 @@ import (
 func (db *Database) RetriveUserIdFromCredentials(username string, password string) (int, error) {
 	query := "select id from users where username = $1"
 	hashed_password, err := db.RetriveHashedPassword(username)
-	if err == sql.ErrNoRows {
+	if err == jankilog.ErrApiUserNoExist {
+		db.log.Warning("db: " + err.Error())
 		return -1, err
 	}
 	if utils.CheckHash(hashed_password, password) {
-		fmt.Println("password matches")
 		result, err := db.db.Query(query, username)
 		if err != nil {
-			log.Panic(err)
-			return -1, err
+			db.log.Error(err.Error())
+			return -1, jankilog.ErrDbQueryError
 		}
 		var id int
 		var i int
 		for result.Next() {
-			err = result.Scan(&id)
-			if err != nil {
-				return -1, err
-			}
+			_ = result.Scan(&id)
 			i++
 		}
 		if i == 0 {
-			fmt.Println("no user exists with same name")
-			return -1, sql.ErrNoRows
+			db.log.Warning("db: No user exists with name " + username)
+			return -1, jankilog.ErrApiUserNoExist
 		}
 		return id, nil
 	}
-	return -1, errors.New("cannot get user id")
+	return -1, errors.New("db: cannot get user id")
 }
 
 func (db *Database) RetriveUserSession(username string, password string) (string, error) {
@@ -51,7 +46,7 @@ func (db *Database) RetriveUserSession(username string, password string) (string
 	query := "select session_key from sessions where user_id = $1"
 	result, err := db.db.Query(query, id)
 	if err != nil {
-		log.Panic(err)
+		db.log.Error("db: " + err.Error())
 		return "", err
 	}
 	var i int
@@ -67,21 +62,17 @@ func (db *Database) RetriveHashedPassword(username string) (string, error) {
 	query := "select password from users where username = $1"
 	result, err := db.db.Query(query, username)
 	if err != nil {
-		log.Panic(err)
-		return "", err
+		db.log.Error("db: " + err.Error())
+		return "", jankilog.ErrDbQueryError
 	}
 	var password string
 	var i int
 	for result.Next() {
-		err = result.Scan(&password)
-		if err != nil {
-			return "", err
-		}
+		_ = result.Scan(&password)
 		i++
 	}
 	if i == 0 {
-		fmt.Println("user may not exists")
-		return "", sql.ErrNoRows
+		return "", jankilog.ErrApiUserNoExist
 	}
 	return password, nil
 }

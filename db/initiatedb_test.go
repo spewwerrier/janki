@@ -6,7 +6,7 @@ import (
 
 func TestConnect(t *testing.T) {
 	conn_str := "user=janki_test dbname=janki_test password=janki_test sslmode=disable port=5556"
-	db := NewConnection(conn_str)
+	db := NewConnection(conn_str, "/tmp/testfile.log")
 	err := db.CleanDb()
 	if err != nil {
 		t.Fatal(err)
