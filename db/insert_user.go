@@ -21,33 +21,34 @@ func (db *Database) CreateNewUser(username string, password string, image_url st
 		return "", jankilog.ErrApiMultipleUsers
 	}
 
-	if !does {
-		query := "insert into users (username, password) values ($1, $2)"
-		_, err := db.db.Exec(query, username, utils.Hash(password))
-		if err != nil {
-			db.log.Warning(err.Error())
-			return "", jankilog.ErrDbExecError
-		}
-
-		session_key, err := db.GenerateSessionKey(username, password)
-		if err != nil {
-			db.log.Warning(err.Error())
-			return "", err
-		}
-		query = "insert into usersdescriptions (user_id, image_url, description) values ($1, $2, $3)"
-
-		user_id, err := db.GetUserId(session_key)
-		if err != nil {
-			return "", err
-		}
-		_, err = db.db.Exec(query, user_id, image_url, description)
-		if err != nil {
-			return "", jankilog.ErrDbExecError
-		}
-		db.log.Info("db: inserted new user " + username)
-		return session_key, nil
+	if does {
+		return "", errors.New("duplicate user exists")
 	}
-	return "", errors.New("duplicate user exists")
+
+	query := "insert into users (username, password) values ($1, $2)"
+	_, err = db.db.Exec(query, username, utils.Hash(password))
+	if err != nil {
+		db.log.Warning(err.Error())
+		return "", jankilog.ErrDbExecError
+	}
+
+	session_key, err := db.GenerateSessionKey(username, password)
+	if err != nil {
+		db.log.Warning(err.Error())
+		return "", err
+	}
+	query = "insert into usersdescriptions (user_id, image_url, description) values ($1, $2, $3)"
+
+	user_id, err := db.GetUserId(session_key)
+	if err != nil {
+		return "", err
+	}
+	_, err = db.db.Exec(query, user_id, image_url, description)
+	if err != nil {
+		return "", jankilog.ErrDbExecError
+	}
+	db.log.Info("db: inserted new user " + username)
+	return session_key, nil
 }
 
 func (db *Database) UpdateUser(session_key string, image_url string, description string) error {
