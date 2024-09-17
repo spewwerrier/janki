@@ -34,13 +34,13 @@ func (d *Database) Create_db() error {
 	}
 
 	// Knob
-	_, err = d.db.Exec("create table if not exists Knobs (id serial primary key, user_id integer references Users(id) on delete cascade, creation timestamp default current_timestamp not null, forkof integer references Knobs(id), ispublic bool)")
+	_, err = d.db.Exec("create table if not exists Knobs (id serial primary key, user_id integer references Users(id) on delete cascade, knob_name text, creation timestamp default current_timestamp not null, forkof integer references Knobs(id), ispublic bool)")
 	if err != nil {
 		return err
 	}
 
 	// KnobDescriptions
-	_, err = d.db.Exec("create table if not exists KnobDescriptions (knob_id integer references Knobs(id) on delete cascade, knob_name text, topics text[], todo text[], tor text[], refs text[], urls text[], ques text[], description text, suggestions text[])")
+	_, err = d.db.Exec("create table if not exists KnobDescriptions (knob_id integer references Knobs(id) on delete cascade, topics text[], todo text[], tor text[], refs text[], urls text[], ques text[], description text, suggestions text[])")
 	if err != nil {
 		return err
 	}

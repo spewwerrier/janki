@@ -49,6 +49,12 @@ func (L *JankiLog) ErrorHttp(statuscode int, value string, w http.ResponseWriter
 	_, _ = w.Write([]byte(value))
 }
 
+func (L *JankiLog) InfoHttp(statuscode int, value string, w http.ResponseWriter) {
+	L.Info(value)
+	w.WriteHeader(statuscode)
+	_, _ = w.Write([]byte(value))
+}
+
 func (L *JankiLog) Warning(value string) {
 	log.Printf(Yellow + "Warning: " + value + Reset)
 	L.Println(value)

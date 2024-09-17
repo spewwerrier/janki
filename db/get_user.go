@@ -78,16 +78,23 @@ func (db *Database) RetriveHashedPassword(username string) (string, error) {
 }
 
 func (db *Database) RetriveUserIdFromSession(session_key string) (int, error) {
-	query := "select user_id from users where session_key = $1"
+	query := "select user_id from sessions where session_key = $1"
 	result, err := db.db.Query(query, session_key)
 	if err != nil {
-		return -1, nil
+		return -1, err
 	}
 	var id int
 	for result.Next() {
 		_ = result.Scan(&id)
 	}
 	return id, nil
+}
+
+func (db *Database) CheckDuplicateknobs(session_key string, knob_name string) error {
+	// get a knob with knob_name and id = session_key
+	// if exists then duplicate
+
+	return nil
 }
 
 func (db *Database) RetriveUser(cookie string) (UsersDetails, error) {
