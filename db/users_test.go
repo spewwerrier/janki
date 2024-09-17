@@ -28,7 +28,6 @@ func TestGetUsers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 }
 
 func TestUserDescriptions(t *testing.T) {
@@ -57,4 +56,11 @@ func TestUserDescriptions(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	third_key, err := db.RegenerateSessionKey("spw", "spewed everywhere")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if third_key == second_key {
+		t.Fatal(err)
+	}
 }

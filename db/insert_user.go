@@ -112,8 +112,21 @@ func (db *Database) CreateUserDescription(session_key string, image_url string, 
 	return nil
 }
 
-func (db *Database) UpdateUserDescriptions(cookie string) error {
-	return nil
+func (db *Database) RegenerateSessionKey(username string, password string) (string, error) {
+	query := "delete from sessions where id = $1"
+	id, err := db.RetriveUserIdFromCredentials(username, password)
+	if err != nil {
+		return "", err
+	}
+	_, err = db.db.Exec(query, id)
+	if err != nil {
+		return "", err
+	}
+	session_key, err := db.GenerateSessionKey(username, password)
+	if err != nil {
+		return "", err
+	}
+	return session_key, nil
 }
 
 func (db *Database) DeleteAccount(cookie string) error {
