@@ -1,11 +1,16 @@
 package server
 
 import (
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"janki/api"
 	"janki/db"
 	jankilog "janki/logs"
-	"log"
-	"net/http"
 )
 
 func Server() {
@@ -26,9 +31,17 @@ func Server() {
 		Handler: Handler(api),
 	}
 	log.Println("listening on http://localhost:8080")
-	err = s.ListenAndServe()
-	if err != nil {
-		log.Panic(err)
-		s.Close()
-	}
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, syscall.SIGTERM)
+	go func() {
+		err := s.ListenAndServe()
+		if err != nil {
+			s.Close()
+			panic(err)
+		}
+	}()
+	<-c
+	s.Close()
+	fmt.Println("closing server")
 }
