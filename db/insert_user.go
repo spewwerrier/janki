@@ -2,10 +2,11 @@ package db
 
 import (
 	"errors"
-	jankilog "janki/logs"
-	"janki/utils"
 	"strconv"
 	"time"
+
+	jankilog "janki/logs"
+	"janki/utils"
 )
 
 // 1 user registers their username and password
@@ -52,7 +53,6 @@ func (db *Database) CreateNewUser(username string, password string, image_url st
 }
 
 func (db *Database) UpdateUser(session_key string, image_url string, description string) error {
-
 	query := "update usersdescriptions  set image_url = $1, description = $2 where user_id = $3"
 	id, err := db.GetUserId(session_key)
 	if err != nil {
@@ -66,7 +66,6 @@ func (db *Database) UpdateUser(session_key string, image_url string, description
 }
 
 func (db *Database) GetUserId(session_key string) (int, error) {
-
 	query := "select user_id from sessions where session_key = $1"
 	result, err := db.db.Query(query, session_key)
 	if err != nil {

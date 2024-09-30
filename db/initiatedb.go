@@ -2,8 +2,9 @@ package db
 
 import (
 	"database/sql"
-	jankilog "janki/logs"
 	"log"
+
+	jankilog "janki/logs"
 
 	_ "github.com/lib/pq"
 )

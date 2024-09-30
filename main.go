@@ -1,6 +1,8 @@
 package main
 
-import server "janki/server"
+import (
+	"janki/server"
+)
 
 func main() {
 	server.Server()

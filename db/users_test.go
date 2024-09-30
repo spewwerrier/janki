@@ -1,8 +1,9 @@
 package db
 
 import (
-	jankilog "janki/logs"
 	"testing"
+
+	jankilog "janki/logs"
 )
 
 func TestGetUsers(t *testing.T) {
