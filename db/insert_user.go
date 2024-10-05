@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	jankilog "janki/logs"
+	"janki/jlog"
 	"janki/utils"
 )
 
@@ -18,8 +18,8 @@ import (
 
 func (db *Database) CreateNewUser(username string, password string, image_url string, description string) (string, error) {
 	does, err := db.CheckDuplicateUser(username)
-	if err == jankilog.ErrApiMultipleUsers {
-		return "", jankilog.ErrApiMultipleUsers
+	if err == jlog.ErrApiMultipleUsers {
+		return "", jlog.ErrApiMultipleUsers
 	}
 
 	if does {
@@ -27,10 +27,10 @@ func (db *Database) CreateNewUser(username string, password string, image_url st
 	}
 
 	query := "insert into users (username, password) values ($1, $2)"
-	_, err = db.db.Exec(query, username, utils.Hash(password))
+	_, err = db.raw.Exec(query, username, utils.Hash(password))
 	if err != nil {
 		db.log.Warning(err.Error())
-		return "", jankilog.ErrDbExecError
+		return "", jlog.ErrDbExecError
 	}
 
 	session_key, err := db.GenerateSessionKey(username, password)
@@ -44,9 +44,9 @@ func (db *Database) CreateNewUser(username string, password string, image_url st
 	if err != nil {
 		return "", err
 	}
-	_, err = db.db.Exec(query, user_id, image_url, description)
+	_, err = db.raw.Exec(query, user_id, image_url, description)
 	if err != nil {
-		return "", jankilog.ErrDbExecError
+		return "", jlog.ErrDbExecError
 	}
 	db.log.Info("db: inserted new user " + username)
 	return session_key, nil
@@ -58,7 +58,7 @@ func (db *Database) UpdateUser(session_key string, image_url string, description
 	if err != nil {
 		return err
 	}
-	_, err = db.db.Exec(query, image_url, description, id)
+	_, err = db.raw.Exec(query, image_url, description, id)
 	if err != nil {
 		return err
 	}
@@ -67,9 +67,9 @@ func (db *Database) UpdateUser(session_key string, image_url string, description
 
 func (db *Database) GetUserId(session_key string) (int, error) {
 	query := "select user_id from sessions where session_key = $1"
-	result, err := db.db.Query(query, session_key)
+	result, err := db.raw.Query(query, session_key)
 	if err != nil {
-		return -1, jankilog.ErrDbQueryError
+		return -1, jlog.ErrDbQueryError
 	}
 
 	var user_id int
@@ -91,7 +91,7 @@ func (db *Database) CreateUserDescription(session_key string, image_url string, 
 	}
 
 	query := "select from usersdescriptions where user_id = $1"
-	result, err := db.db.Query(query, user_id)
+	result, err := db.raw.Query(query, user_id)
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func (db *Database) CreateUserDescription(session_key string, image_url string, 
 	}
 
 	query = "insert into usersdescriptions (user_id, image_url, description) values ($1, $2, $3)"
-	_, err = db.db.Exec(query, user_id, image_url, description)
+	_, err = db.raw.Exec(query, user_id, image_url, description)
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func (db *Database) RegenerateSessionKey(username string, password string) (stri
 	if err != nil {
 		return "", err
 	}
-	_, err = db.db.Exec(query, id)
+	_, err = db.raw.Exec(query, id)
 	if err != nil {
 		return "", err
 	}
@@ -140,10 +140,10 @@ func (db *Database) GenerateSessionKey(username string, password string) (string
 	}
 
 	sql := "insert into sessions (session_key, user_id) values ($1, $2)"
-	_, err = db.db.Exec(sql, session_key, id)
+	_, err = db.raw.Exec(sql, session_key, id)
 	if err != nil {
 		db.log.Warning(err.Error())
-		return "", jankilog.ErrDbExecError
+		return "", jlog.ErrDbExecError
 	}
 
 	return session_key, nil
@@ -151,8 +151,8 @@ func (db *Database) GenerateSessionKey(username string, password string) (string
 
 func (db *Database) CheckDuplicateUser(username string) (bool, error) {
 	_, err := db.RetriveUserIdFromCredentials(username, "")
-	if err == jankilog.ErrApiUserNoExist {
+	if err == jlog.ErrApiUserNoExist {
 		return false, nil
 	}
-	return true, jankilog.ErrApiMultipleUsers
+	return true, jlog.ErrApiMultipleUsers
 }

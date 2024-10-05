@@ -10,12 +10,12 @@ import (
 
 	"janki/api"
 	"janki/db"
-	jankilog "janki/logs"
+	"janki/jlog"
 )
 
 func Server() {
 	database := db.NewConnection("user=janki dbname=janki password=janki sslmode=disable port=5555", "dblogs.log")
-	logger := jankilog.NewLogger("apilogs.log")
+	logger := jlog.NewLogger("apilogs.log")
 	err := database.Create_db()
 	if err != nil {
 		log.Panic(err)

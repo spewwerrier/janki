@@ -4,14 +4,14 @@ import (
 	"errors"
 	"testing"
 
-	jankilog "janki/logs"
+	"janki/jlog"
 )
 
 func TestKnob(t *testing.T) {
 	db := NewConnection("user=janki_test dbname=janki_test password=janki_test sslmode=disable port=5556", "/tmp/testfile.log")
 
 	err := db.Create_db()
-	defer db.db.Close()
+	defer db.raw.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func TestKnob(t *testing.T) {
 	}
 
 	err = KnobCreate(db, user1, k)
-	if err != jankilog.ErrKnobExists {
+	if err != jlog.ErrKnobExists {
 		t.Fatal(errors.New("should complain about multiple knobs but did not"))
 	}
 }

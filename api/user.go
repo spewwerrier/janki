@@ -2,15 +2,16 @@ package api
 
 import (
 	"fmt"
-	"janki/db"
-	jankilog "janki/logs"
 	"net/http"
+
+	"janki/db"
+	"janki/jlog"
 )
 
 type Users struct {
 	Fields
 	DB  *db.Database
-	Log jankilog.JankiLog
+	Log jlog.Jlog
 }
 
 func (u Users) Create(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +99,6 @@ func (u Users) Read(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(session_key)
 	u.Log.Println("gave session key to", username)
 	_, _ = w.Write([]byte(session_key))
-
 }
 
 func (u Users) Error(w http.ResponseWriter, r *http.Request) {

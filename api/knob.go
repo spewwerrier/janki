@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	"janki/db"
-	jankilog "janki/logs"
+	"janki/jlog"
 )
 
 type Knob struct {
 	Fields
 	DB  *db.Database
-	Log jankilog.JankiLog
+	Log jlog.Jlog
 }
 
 func (k Knob) Create(w http.ResponseWriter, r *http.Request) {

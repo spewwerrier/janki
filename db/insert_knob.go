@@ -1,7 +1,7 @@
 package db
 
 import (
-	jankilog "janki/logs"
+	"janki/jlog"
 )
 
 func (db *Database) CreateNewKnob(session_key string, knob Knob) error {
@@ -11,21 +11,21 @@ func (db *Database) CreateNewKnob(session_key string, knob Knob) error {
 	}
 
 	_, err = db.GetKnobId(session_key, knob.KnobName)
-	if err != jankilog.ErrNoKnobExists {
-		return jankilog.ErrKnobExists
+	if err != jlog.ErrNoKnobExists {
+		return jlog.ErrKnobExists
 	}
 
 	// // TODO: check this
-	// if err := db.GetUserKnobs(session_key); err != jankilog.ErrNoKnobExists {
+	// if err := db.GetUserKnobs(session_key); err != jlog.ErrNoKnobExists {
 	// 	return errors.New("failed to create new knob. Knob already exists")
 	// }
 	// _, err = db.GetKnobId(session_key, knob.KnobName)
-	// if err != jankilog.ErrNoKnobExists {
+	// if err != jlog.ErrNoKnobExists {
 	// 	return errors.New("knob already exists")
 	// }
 
 	query := "insert into knobs (user_id, knob_name, ispublic) values ($1, $2, $3)"
-	_, err = db.db.Exec(query, id, knob.KnobName, knob.IsPublic)
+	_, err = db.raw.Exec(query, id, knob.KnobName, knob.IsPublic)
 	if err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func (db *Database) CreateNewKnob(session_key string, knob Knob) error {
 	}
 
 	query = "insert into knobdescriptions (knob_id, description) values ($1, $2)"
-	_, err = db.db.Exec(query, knobId, "this is a sample knob")
+	_, err = db.raw.Exec(query, knobId, "this is a sample knob")
 	if err != nil {
 		return err
 	}

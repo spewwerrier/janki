@@ -2,12 +2,13 @@ package db
 
 import (
 	"database/sql"
-	jankilog "janki/logs"
 	"sync"
+
+	"janki/jlog"
 )
 
 type Database struct {
-	mu  sync.Mutex
-	db  *sql.DB
-	log jankilog.JankiLog
+	log jlog.Jlog
+	raw *sql.DB
+	mu  *sync.Mutex
 }
