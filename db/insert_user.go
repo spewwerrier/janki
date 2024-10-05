@@ -27,7 +27,7 @@ func (db *Database) CreateNewUser(username string, password string, image_url st
 	}
 
 	query := "insert into users (username, password) values ($1, $2)"
-	_, err = db.raw.Exec(query, username, utils.Hash(password))
+	_, err = db.raw.Exec(query, username, utils.HashBcrypt(password))
 	if err != nil {
 		db.log.Warning(err.Error())
 		return "", jlog.ErrDbExecError
@@ -133,7 +133,7 @@ func (db *Database) DeleteAccount(cookie string) error {
 }
 
 func (db *Database) GenerateSessionKey(username string, password string) (string, error) {
-	session_key := utils.Hash(username + password + strconv.Itoa(time.Now().Nanosecond()))
+	session_key := utils.HashBcrypt(username + password + strconv.Itoa(time.Now().Nanosecond()))
 	id, err := db.RetriveUserIdFromCredentials(username, password)
 	if err != nil {
 		return "", err
