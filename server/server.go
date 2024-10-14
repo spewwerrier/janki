@@ -27,8 +27,8 @@ func Server() {
 	}
 
 	s := &http.Server{
-		Addr:    "localhost:8080",
-		Handler: Handler(api),
+		Addr:    "0.0.0.0:8080",
+		Handler: Middleware(Handler(api)),
 	}
 	log.Println("listening on http://localhost:8080")
 	c := make(chan os.Signal, 1)

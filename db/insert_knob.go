@@ -1,36 +1,38 @@
 package db
 
 import (
+	"fmt"
+
 	"janki/jlog"
+	"janki/utils"
 )
 
-func (db *Database) CreateNewKnob(session_key string, knob Knob) error {
-	id, err := db.RetriveUserIdFromSession(session_key)
+// creates new knob using the api key
+func (db *Database) CreateNewKnob(api_key string, knob Knob) error {
+	id, err := db.RetriveUserIdFromSession(api_key)
+	fmt.Println(id)
 	if err != nil {
 		return err
 	}
 
-	_, err = db.GetKnobId(session_key, knob.KnobName)
+	_, err = db.GetKnobId(api_key, knob.KnobName)
+	// we dont want any knob of same name to already exist
+	// so if we dont find error of KnobNotFound then there is alerady
+	// an existing knob with same name :(((
 	if err != jlog.ErrNoKnobExists {
-		return jlog.ErrKnobExists
+		return jlog.ErrKnobAlreadyExists
 	}
 
-	// // TODO: check this
-	// if err := db.GetUserKnobs(session_key); err != jlog.ErrNoKnobExists {
-	// 	return errors.New("failed to create new knob. Knob already exists")
-	// }
-	// _, err = db.GetKnobId(session_key, knob.KnobName)
-	// if err != jlog.ErrNoKnobExists {
-	// 	return errors.New("knob already exists")
-	// }
+	knob.Identifier = utils.GenerateIdentifier(int64(id))
 
-	query := "insert into knobs (user_id, knob_name, ispublic) values ($1, $2, $3)"
-	_, err = db.raw.Exec(query, id, knob.KnobName, knob.IsPublic)
+	query := "insert into knobs (user_id, knob_name, ispublic, identifier) values ($1, $2, $3, $4)"
+	_, err = db.raw.Exec(query, id, knob.KnobName, knob.IsPublic, knob.Identifier)
 	if err != nil {
+		fmt.Println(query, id, knob.KnobName, knob.IsPublic)
 		return err
 	}
 
-	knobId, err := db.GetKnobId(session_key, knob.KnobName)
+	knobId, err := db.GetKnobId(api_key, knob.KnobName)
 	if err != nil {
 		return err
 	}

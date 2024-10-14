@@ -2,7 +2,7 @@ package db
 
 import (
 	"errors"
-	"strconv"
+	"fmt"
 	"time"
 
 	"janki/jlog"
@@ -16,6 +16,7 @@ import (
 // 5 generate cookie
 // 6 check if duplicate user exists
 
+// creates new user and returns their api key
 func (db *Database) CreateNewUser(username string, password string, image_url string, description string) (string, error) {
 	does, err := db.CheckDuplicateUser(username)
 	if err == jlog.ErrApiMultipleUsers {
@@ -33,14 +34,14 @@ func (db *Database) CreateNewUser(username string, password string, image_url st
 		return "", jlog.ErrDbExecError
 	}
 
-	session_key, err := db.GenerateSessionKey(username, password)
+	api_key, err := db.GenerateApiKey(username, password)
 	if err != nil {
 		db.log.Warning(err.Error())
 		return "", err
 	}
 	query = "insert into usersdescriptions (user_id, image_url, description) values ($1, $2, $3)"
 
-	user_id, err := db.GetUserId(session_key)
+	user_id, err := db.GetUserId(api_key)
 	if err != nil {
 		return "", err
 	}
@@ -49,7 +50,7 @@ func (db *Database) CreateNewUser(username string, password string, image_url st
 		return "", jlog.ErrDbExecError
 	}
 	db.log.Info("db: inserted new user " + username)
-	return session_key, nil
+	return api_key, nil
 }
 
 func (db *Database) UpdateUser(session_key string, image_url string, description string) error {
@@ -121,7 +122,7 @@ func (db *Database) RegenerateSessionKey(username string, password string) (stri
 	if err != nil {
 		return "", err
 	}
-	session_key, err := db.GenerateSessionKey(username, password)
+	session_key, err := db.GenerateApiKey(username, password)
 	if err != nil {
 		return "", err
 	}
@@ -132,21 +133,22 @@ func (db *Database) DeleteAccount(cookie string) error {
 	return nil
 }
 
-func (db *Database) GenerateSessionKey(username string, password string) (string, error) {
-	session_key := utils.HashBcrypt(username + password + strconv.Itoa(time.Now().Nanosecond()))
+func (db *Database) GenerateApiKey(username string, password string) (string, error) {
+	api_key := utils.GenerateIdentifier(int64(time.Now().Nanosecond()))
 	id, err := db.RetriveUserIdFromCredentials(username, password)
 	if err != nil {
 		return "", err
 	}
 
 	sql := "insert into sessions (session_key, user_id) values ($1, $2)"
-	_, err = db.raw.Exec(sql, session_key, id)
+	_, err = db.raw.Exec(sql, api_key, id)
+	fmt.Println(api_key)
 	if err != nil {
-		db.log.Warning(err.Error())
+		db.log.Error("error while inserting session key in generatesessionkey\n" + err.Error())
 		return "", jlog.ErrDbExecError
 	}
 
-	return session_key, nil
+	return api_key, nil
 }
 
 func (db *Database) CheckDuplicateUser(username string) (bool, error) {

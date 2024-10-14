@@ -1,9 +1,21 @@
 package server
 
 import (
-	"janki/api"
 	"net/http"
+
+	"janki/api"
 )
+
+func Middleware(handler http.Handler) http.Handler {
+	// currently only sets up cors. Plans to add a debug
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, HEAD")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
+		handler.ServeHTTP(w, r)
+	})
+}
 
 func Handler(api *api.Api) *http.ServeMux {
 	h := http.NewServeMux()
@@ -14,6 +26,7 @@ func Handler(api *api.Api) *http.ServeMux {
 	h.HandleFunc("/users/", api.Users.Error)
 
 	h.HandleFunc("/knob/create", api.Knob.Create)
+	h.HandleFunc("/knob/read", api.Knob.Read)
 
 	h.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("Your error knows no bounds"))

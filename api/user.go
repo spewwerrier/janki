@@ -34,14 +34,14 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session_key, err := u.DB.CreateNewUser(username, password, "https://example.com", "I am groot")
+	api_key, err := u.DB.CreateNewUser(username, password, "https://example.com", "I am groot")
 	if err != nil {
 		u.Log.ErrorHttp(http.StatusBadRequest, "duplicate user", w)
 		return
 	}
 	cookie := http.Cookie{
 		Name:   "user_token",
-		Value:  session_key,
+		Value:  api_key,
 		Path:   "/",
 		MaxAge: 3600,
 	}

@@ -78,9 +78,9 @@ func (db *Database) RetriveHashedPassword(username string) (string, error) {
 	return password, nil
 }
 
-func (db *Database) RetriveUserIdFromSession(session_key string) (int, error) {
+func (db *Database) RetriveUserIdFromSession(api_key string) (int, error) {
 	query := "select user_id from sessions where session_key = $1"
-	result, err := db.raw.Query(query, session_key)
+	result, err := db.raw.Query(query, api_key)
 	if err != nil {
 		return -1, err
 	}

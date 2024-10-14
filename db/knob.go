@@ -1,12 +1,13 @@
 package db
 
+import "time"
+
 type Knob struct {
-	Id       int
-	UsersId  int
-	KnobName string
-	Creation int
-	ForkOf   int
-	IsPublic bool
+	Creation   time.Time
+	KnobName   string
+	ForkOf     int
+	IsPublic   bool
+	Identifier string
 }
 
 type KnobDescription struct {
