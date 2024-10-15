@@ -66,16 +66,18 @@ func (u Users) CreateDescription(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("created description"))
 }
 
+// request params for this functions are
+// description
+// image_url
 func (u Users) UpdateUserDescription(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		u.Log.ErrorHttp(http.StatusBadRequest, "failed to parse form", w)
 		return
 	}
-	session_key := r.Form.Get("session_key")
-	image_url := r.Form.Get("image_url")
+	api_key := r.Form.Get("api_key")
 	description := r.Form.Get("description")
-	err = u.DB.UpdateUser(session_key, image_url, description)
+	err = u.DB.UpdateUser(api_key, "description", description)
 	if err != nil {
 		u.Log.ErrorHttp(http.StatusInternalServerError, "cannot update user description for some reason", w)
 		return
@@ -91,7 +93,7 @@ func (u Users) Read(w http.ResponseWriter, r *http.Request) {
 	}
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
-	session_key, err := u.DB.RetriveUserSession(username, password)
+	session_key, err := u.DB.RetriveUserApi(username, password)
 	if err != nil {
 		u.Log.ErrorHttp(http.StatusInternalServerError, "cannot retrive user session", w)
 		return

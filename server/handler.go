@@ -27,6 +27,7 @@ func Handler(api *api.Api) *http.ServeMux {
 
 	h.HandleFunc("/knob/create", api.Knob.Create)
 	h.HandleFunc("/knob/read", api.Knob.Read)
+	h.HandleFunc("/knob/update", api.Knob.Update)
 
 	h.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("Your error knows no bounds"))

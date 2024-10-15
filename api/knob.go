@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"janki/db"
@@ -40,6 +41,8 @@ func (k Knob) Create(w http.ResponseWriter, r *http.Request) {
 	k.Log.InfoHttp(http.StatusOK, "created new knob", w)
 }
 
+// if read has a parameter -knobid = something then it returns that something
+// else it returns everything
 func (k Knob) Read(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
@@ -47,6 +50,19 @@ func (k Knob) Read(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	api_key := r.Form.Get("api_key")
+	knob_id := r.Form.Get("knob_id")
+	if knob_id != "" {
+		knob, _ := k.DB.GetKnobDescriptions(api_key, knob_id)
+		knobs_json, err := json.Marshal(knob)
+		if err != nil {
+			k.Log.ErrorHttp(http.StatusInternalServerError, "failed to encode the knobs", w)
+			return
+		}
+		fmt.Println(knob)
+		w.Write(knobs_json)
+		return
+	}
+
 	knobs, err := k.DB.GetUserKnobs(api_key)
 	if err != nil {
 		k.Log.ErrorHttp(http.StatusBadRequest, "failed to get knob", w)
@@ -57,16 +73,28 @@ func (k Knob) Read(w http.ResponseWriter, r *http.Request) {
 		k.Log.ErrorHttp(http.StatusInternalServerError, "failed to encode the knobs", w)
 		return
 	}
+	fmt.Println(knobs)
 	w.Write(knobs_json)
 }
 
-func (k Knob) UpdateKnobDescription(w http.ResponseWriter, r *http.Request) {
-	// err := r.ParseForm()
-	// if err != nil {
-	// 	k.Log.ErrorHttp(http.StatusBadRequest, "unable to parse form", w)
-	// 	return
-	// }
+func (k Knob) Update(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		k.Log.ErrorHttp(http.StatusBadRequest, "unable to parse form", w)
+		return
+	}
 
-	// session_key := r.Form.Get("session_key")
-	// knob_name := r.Form.Get("knob_name")
+	api_key := r.Form.Get("api_key")
+	knob_id := r.Form.Get("knob_id")
+	ques := r.Form.Get("questions")
+	refs := r.Form.Get("refs")
+
+	fmt.Println(api_key, knob_id, ques)
+	if refs != "" {
+		k.DB.UpdateKnob(api_key, knob_id, "refs", refs)
+	}
+	if ques != "" {
+		k.DB.UpdateKnob(api_key, knob_id, "ques", ques)
+	}
+	// k.DB.UpdateKnobDescriptions)
 }

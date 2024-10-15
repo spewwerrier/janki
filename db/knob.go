@@ -1,23 +1,26 @@
 package db
 
-import "time"
+import (
+	"time"
+
+	"github.com/lib/pq"
+)
 
 type Knob struct {
 	Creation   time.Time
 	KnobName   string
+	Identifier string
 	ForkOf     int
 	IsPublic   bool
-	Identifier string
 }
 
 type KnobDescription struct {
-	description string
-	topics      []string
-	todo        []string
-	tor         []string
-	refs        []string
-	urls        []string
-	ques        []string
-	suggestions []string
-	knob_id     int
+	Description string         `json:"Description"`
+	Topics      pq.StringArray `json:"Topics"`
+	Todo        pq.StringArray `json:"Todo"`
+	Tor         pq.StringArray `json:"Tor"`
+	Refs        pq.StringArray `json:"Refs"`
+	Urls        pq.StringArray `json:"Urls"`
+	Ques        pq.StringArray `json:"Ques"`
+	Suggestions pq.StringArray `json:"Suggestions"`
 }

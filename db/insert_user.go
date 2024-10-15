@@ -9,13 +9,6 @@ import (
 	"janki/utils"
 )
 
-// 1 user registers their username and password
-// 2 user updates their username and password
-// 3 user adds their user_description field
-// 4 user deletes their account
-// 5 generate cookie
-// 6 check if duplicate user exists
-
 // creates new user and returns their api key
 func (db *Database) CreateNewUser(username string, password string, image_url string, description string) (string, error) {
 	does, err := db.CheckDuplicateUser(username)
@@ -53,18 +46,18 @@ func (db *Database) CreateNewUser(username string, password string, image_url st
 	return api_key, nil
 }
 
-func (db *Database) UpdateUser(session_key string, image_url string, description string) error {
-	query := "update usersdescriptions  set image_url = $1, description = $2 where user_id = $3"
-	id, err := db.GetUserId(session_key)
-	if err != nil {
-		return err
-	}
-	_, err = db.raw.Exec(query, image_url, description, id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// func (db *Database) UpdateUser(session_key string, image_url string, description string) error {
+// 	query := "update usersdescriptions  set image_url = $1, description = $2 where user_id = $3"
+// 	id, err := db.GetUserId(session_key)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	_, err = db.raw.Exec(query, image_url, description, id)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
 func (db *Database) GetUserId(session_key string) (int, error) {
 	query := "select user_id from sessions where session_key = $1"
@@ -78,6 +71,9 @@ func (db *Database) GetUserId(session_key string) (int, error) {
 	for result.Next() {
 		i++
 		_ = result.Scan(&user_id)
+	}
+	if i < 1 {
+		return -1, jlog.ErrApiUserNoExist
 	}
 	if i > 1 {
 		return user_id, errors.New("multiple user exists")

@@ -15,13 +15,13 @@ func (db *Database) RetriveUserIdFromCredentials(username string, password strin
 	query := "select id from users where username = $1"
 	hashed_password, err := db.RetriveHashedPassword(username)
 	if err == jlog.ErrApiUserNoExist {
-		db.log.Warning("db: " + err.Error())
+		db.log.Warning("RetriveUserIdFromCredentaials " + err.Error())
 		return -1, err
 	}
 	if utils.CheckHash(hashed_password, password) {
 		result, err := db.raw.Query(query, username)
 		if err != nil {
-			db.log.Error(err.Error())
+			db.log.Error("RetriveUserIdFromCredentials " + err.Error())
 			return -1, jlog.ErrDbQueryError
 		}
 		var id int
@@ -31,15 +31,15 @@ func (db *Database) RetriveUserIdFromCredentials(username string, password strin
 			i++
 		}
 		if i == 0 {
-			db.log.Warning("db: No user exists with name " + username)
+			db.log.Warning("RetriveUserIdFromCredentaials: No user exists with name " + username)
 			return -1, jlog.ErrApiUserNoExist
 		}
 		return id, nil
 	}
-	return -1, errors.New("db: cannot get user id")
+	return -1, errors.New("cannot get user id")
 }
 
-func (db *Database) RetriveUserSession(username string, password string) (string, error) {
+func (db *Database) RetriveUserApi(username string, password string) (string, error) {
 	id, err := db.RetriveUserIdFromCredentials(username, password)
 	if err != nil {
 		return "", err
@@ -47,7 +47,7 @@ func (db *Database) RetriveUserSession(username string, password string) (string
 	query := "select session_key from sessions where user_id = $1"
 	result, err := db.raw.Query(query, id)
 	if err != nil {
-		db.log.Error("db: " + err.Error())
+		db.log.Error("RetriveUserApi " + err.Error())
 		return "", err
 	}
 	var i int
@@ -63,7 +63,7 @@ func (db *Database) RetriveHashedPassword(username string) (string, error) {
 	query := "select password from users where username = $1"
 	result, err := db.raw.Query(query, username)
 	if err != nil {
-		db.log.Error("db: " + err.Error())
+		db.log.Error("RetriveHashedPassword " + err.Error())
 		return "", jlog.ErrDbQueryError
 	}
 	var password string
@@ -73,15 +73,17 @@ func (db *Database) RetriveHashedPassword(username string) (string, error) {
 		i++
 	}
 	if i == 0 {
+		db.log.Warning("RetriveHashedPassword user does not exists")
 		return "", jlog.ErrApiUserNoExist
 	}
 	return password, nil
 }
 
-func (db *Database) RetriveUserIdFromSession(api_key string) (int, error) {
+func (db *Database) RetriveUserIdFromApi(api_key string) (int, error) {
 	query := "select user_id from sessions where session_key = $1"
 	result, err := db.raw.Query(query, api_key)
 	if err != nil {
+		db.log.Error("RetriveUserIdFromApi failed to query the database")
 		return -1, err
 	}
 	var id int

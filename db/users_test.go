@@ -44,7 +44,7 @@ func TestUserDescriptions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	second_key, err := db.RetriveUserSession("spw", "spewed everywhere")
+	second_key, err := db.RetriveUserApi("spw", "spewed everywhere")
 	if err != nil {
 		t.Fatal(err)
 	}
