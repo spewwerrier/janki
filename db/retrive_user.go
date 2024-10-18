@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"janki/jlog"
@@ -44,6 +45,7 @@ func (db *Database) RetriveUserIdFromCredentials(username string, password strin
 func (db *Database) RetriveUserApi(username string, password string) (string, error) {
 	id, err := db.RetriveUserIdFromCredentials(username, password)
 	if err != nil {
+		db.log.Error("RetriveUserApi failed to retrive user" + err.Error())
 		return "", err
 	}
 	query := "select session_key from sessions where user_id = $1"
@@ -106,23 +108,33 @@ func (db *Database) CheckDuplicateknobs(session_key string, knob_name string) er
 	return nil
 }
 
-func (db *Database) RetriveUser(cookie string) (UsersDetails, error) {
-	u := UsersDetails{
-		Info: Info{
-			Name:     "Aagaman",
-			Password: "lkdfsjasd8asdkljf;akjl",
-		},
-		Description: Descriptions{
-			Creation:       120948,
-			Image_url:      "https://example.com",
-			Description:    "This is a dummy account",
-			Existing_knobs: 129,
-		},
-		Session: Session{
-			Cookie_string: "9080reujidskasdh780oguij",
-			Creation:      3600,
-			User_id:       348907,
-		},
+func (db *Database) RetriveUser(api_key string) (UserDescription, error) {
+	id, err := db.GetUserId(api_key)
+	if err != nil {
+		db.log.Error("RetriveUser falied to get user id")
+		return UserDescription{}, nil
 	}
+
+	query := "select users.username, usersdescriptions.creation, image_url, description, usersdescriptions.creation, sessions.session_key, sessions.creation from users inner join usersdescriptions on users.id = usersdescriptions.user_id  inner join sessions on users.id = sessions.user_id where users.id = $1"
+	rows := db.raw.QueryRow(query, id)
+	if rows.Err() != nil {
+		db.log.Error("RetriveUser failed to query the user information")
+		return UserDescription{}, nil
+	}
+	u := UserDescription{}
+	err = rows.Scan(
+		&u.User.Name,
+		&u.Creation,
+		&u.Image_url,
+		&u.Description,
+		&u.Creation,
+		&u.Session.ApiKey,
+		&u.Session.Creation,
+	)
+	if err != nil {
+		return u, err
+	}
+	fmt.Println(u)
+
 	return u, nil
 }

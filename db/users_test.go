@@ -1,67 +1,71 @@
 package db
 
-// import (
-// 	"testing"
+import (
+	"testing"
 
-// 	"janki/jlog"
-// )
+	"janki/jlog"
+)
 
-// func TestGetUsers(t *testing.T) {
-// 	db := NewConnection("user=janki_test dbname=janki_test password=janki_test sslmode=disable port=5556", "/tmp/testfile.log")
+func ConnectTestInstance(t *testing.T) *Database {
+	conn_str := "postgres://janki_test:janki_test@localhost/janki_test?sslmode=disable&port=5556"
+	db := NewConnection(conn_str, "/tmp/testfile.log")
 
-// 	err := db.Create_db()
-// 	defer db.raw.Close()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+	err := db.Create_db()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return db
+}
 
-// 	_, err = db.CreateNewUser("dummyuser", "dummy password", "groot", "groot")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+const (
+	username    = "dummyuser"
+	passwd      = "dummypass"
+	description = "hello I am a dummy dum dum"
+	image_url   = "https://example.com/image.png"
+)
 
-// 	_, err = db.CreateNewUser("dummyuser", "different password", "groot", "groot")
-// 	if err != jlog.ErrApiMultipleUsers {
-// 		t.Fatal("should complain about duplicate user but did not")
-// 	}
+func TestUsers(t *testing.T) {
+	d := ConnectTestInstance(t)
 
-// 	_, err = db.CreateNewUser("dummyuser2", "different password", "groot", "groot")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// }
+	api, err := d.CreateNewUser(username, passwd)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// func TestUserDescriptions(t *testing.T) {
-// 	db := NewConnection("user=janki_test dbname=janki_test password=janki_test sslmode=disable port=5556", "/tmp/testfile.log")
+	err = d.UpdateUser(api, "description", description)
+	if err != nil {
+		t.Fatal(err)
+	}
+	d.UpdateUser(api, "image_url", image_url)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	err := db.Create_db()
-// 	defer db.raw.Close()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+	api_check, err := d.RetriveUserApi(username, passwd)
+	if err != nil || api_check != api {
+		t.Fatal(err)
+	}
 
-// 	session_key, err := db.CreateNewUser("spw", "spewed everywhere", "bleh", "bleh")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	second_key, err := db.RetriveUserApi("spw", "spewed everywhere")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if session_key != second_key {
-// 		t.Fatal(err)
-// 	}
+	user, err := d.RetriveUser(api)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	err = db.UpdateUser(session_key, "zahallo", "zahallo")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+	if user.User.Name != username {
+		t.Fatalf("Username is not correct")
+	}
 
-// 	third_key, err := db.RegenerateSessionKey("spw", "spewed everywhere")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if third_key == second_key {
-// 		t.Fatal(err)
-// 	}
-// }
+	if user.Description != description {
+		t.Fatalf("Description is not correct")
+	}
+
+	if user.Image_url != image_url {
+		t.Fatalf("Image url is not correct")
+	}
+
+	_, err = d.CreateNewUser(username, passwd)
+	// err if user tries to create another user with same name
+	if err != jlog.ErrApiMultipleUsers {
+		t.Fatal("should throw multiple user exists error but did not")
+	}
+}

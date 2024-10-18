@@ -10,7 +10,7 @@ import (
 )
 
 // creates new user and returns their api key
-func (db *Database) CreateNewUser(username string, password string, image_url string, description string) (string, error) {
+func (db *Database) CreateNewUser(username string, password string) (string, error) {
 	does, err := db.CheckDuplicateUser(username)
 	if err == jlog.ErrApiMultipleUsers {
 		return "", jlog.ErrApiMultipleUsers
@@ -38,26 +38,13 @@ func (db *Database) CreateNewUser(username string, password string, image_url st
 	if err != nil {
 		return "", err
 	}
-	_, err = db.raw.Exec(query, user_id, image_url, description)
+	_, err = db.raw.Exec(query, user_id, "something", "something")
 	if err != nil {
 		return "", jlog.ErrDbExecError
 	}
 	db.log.Info("db: inserted new user " + username)
 	return api_key, nil
 }
-
-// func (db *Database) UpdateUser(session_key string, image_url string, description string) error {
-// 	query := "update usersdescriptions  set image_url = $1, description = $2 where user_id = $3"
-// 	id, err := db.GetUserId(session_key)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	_, err = db.raw.Exec(query, image_url, description, id)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
 
 func (db *Database) GetUserId(session_key string) (int, error) {
 	query := "select user_id from sessions where session_key = $1"

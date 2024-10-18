@@ -1,4 +1,6 @@
 janki
 .env
+apilogs.log
+dblogs.log
 tmp/
 tmp/**

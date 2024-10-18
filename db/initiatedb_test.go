@@ -5,8 +5,9 @@ import (
 )
 
 func TestConnect(t *testing.T) {
-	conn_str := "user=janki_test dbname=janki_test password=janki_test sslmode=disable port=5556"
+	conn_str := "postgres://janki_test:janki_test@localhost/janki_test?sslmode=disable&port=5556"
 	db := NewConnection(conn_str, "/tmp/testfile.log")
+	defer db.Close()
 	err := db.CleanDb()
 	if err != nil {
 		t.Fatal(err)

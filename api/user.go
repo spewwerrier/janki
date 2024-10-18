@@ -1,7 +1,7 @@
 package api
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 
 	"janki/db"
@@ -34,7 +34,7 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api_key, err := u.DB.CreateNewUser(username, password, "https://example.com", "I am groot")
+	api_key, err := u.DB.CreateNewUser(username, password)
 	if err != nil {
 		u.Log.ErrorHttp(http.StatusBadRequest, "duplicate user", w)
 		return
@@ -66,22 +66,32 @@ func (u Users) CreateDescription(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("created description"))
 }
 
-// request params for this functions are
-// description
-// image_url
-func (u Users) UpdateUserDescription(w http.ResponseWriter, r *http.Request) {
+func (u Users) Update(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		u.Log.ErrorHttp(http.StatusBadRequest, "failed to parse form", w)
 		return
 	}
 	api_key := r.Form.Get("api_key")
+
 	description := r.Form.Get("description")
-	err = u.DB.UpdateUser(api_key, "description", description)
-	if err != nil {
-		u.Log.ErrorHttp(http.StatusInternalServerError, "cannot update user description for some reason", w)
-		return
+	image_url := r.Form.Get("iamge_url")
+
+	if description != "" {
+		err = u.DB.UpdateUser(api_key, "description", description)
+		if err != nil {
+			u.Log.ErrorHttp(http.StatusInternalServerError, "cannot update user description", w)
+			return
+		}
 	}
+	if image_url != "" {
+		err = u.DB.UpdateUser(api_key, "image_url", image_url)
+		if err != nil {
+			u.Log.ErrorHttp(http.StatusInternalServerError, "cannot update user image", w)
+			return
+		}
+	}
+
 	_, _ = w.Write([]byte("updated description"))
 }
 
@@ -91,16 +101,17 @@ func (u Users) Read(w http.ResponseWriter, r *http.Request) {
 		u.Log.ErrorHttp(http.StatusBadRequest, "failed to parse form", w)
 		return
 	}
-	username := r.Form.Get("username")
-	password := r.Form.Get("password")
-	session_key, err := u.DB.RetriveUserApi(username, password)
+	api := r.Form.Get("api_key")
+	user, err := u.DB.RetriveUser(api)
 	if err != nil {
-		u.Log.ErrorHttp(http.StatusInternalServerError, "cannot retrive user session", w)
+		u.Log.ErrorHttp(http.StatusInternalServerError, "cannot retrive user session"+err.Error(), w)
 		return
 	}
-	fmt.Println(session_key)
-	u.Log.Println("gave session key to", username)
-	_, _ = w.Write([]byte(session_key))
+	v, _ := json.Marshal(user)
+	w.Write(v)
+}
+
+func (u Users) Regenerate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u Users) Error(w http.ResponseWriter, r *http.Request) {

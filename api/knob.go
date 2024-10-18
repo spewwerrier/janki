@@ -96,5 +96,4 @@ func (k Knob) Update(w http.ResponseWriter, r *http.Request) {
 	if ques != "" {
 		k.DB.UpdateKnob(api_key, knob_id, "ques", ques)
 	}
-	// k.DB.UpdateKnobDescriptions)
 }

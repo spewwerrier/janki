@@ -1,38 +1,104 @@
 package db
 
 import (
-	"database/sql"
-	"fmt"
 	"testing"
 )
 
-func TestKnob(t *testing.T) {
-	db := NewConnection("user=janki_test dbname=janki_test password=janki_test sslmode=disable port=5556", "/tmp/testfile.log")
+const (
+	username1        = "dummyuser1"
+	username2        = "dummyuser2"
+	username3        = "dummyuser3"
+	knob_description = "A theme of Arknights I like very much"
+)
 
-	err := db.Create_db()
-	defer db.Close()
+func TestKnobDuplications(t *testing.T) {
+	d := ConnectTestInstance(t)
+	defer d.Close()
+
+	api1, err := d.CreateNewUser(username1, passwd)
+	if err != nil {
+		t.Fatal(err)
+	}
+	k := Knob{
+		KnobName: "Understanding atomic configuration of atomic bombs",
+		IsPublic: true,
+	}
+
+	err = d.CreateNewKnob(api1, k)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	tx, err := db.raw.Begin()
-	if err != nil {
-		t.Fatal(err)
+	// user creating a knob with same name twice results in error
+	err = d.CreateNewKnob(api1, k)
+	if err == nil {
+		t.Fatal("should throw multiple knobs exists but did not")
 	}
-	defer tx.Rollback()
 
-	rows, err := tx.Query("select * from knobs where id = 1")
+	api2, err := d.CreateNewUser(username2, passwd)
 	if err != nil {
 		t.Fatal(err)
 	}
-	for rows.Next() {
-		fmt.Println(rows)
+
+	// another user creating knob with same name as other user does not results in error
+	err = d.CreateNewKnob(api2, k)
+	if err != nil {
+		t.Fatal("WTMOOOOOOOOOOOOOOOOO", err)
 	}
 }
 
-func Execute(db *Database, query string, args ...interface{}) (sql.Result, error) {
-	for _, arg := range args {
-		fmt.Println(arg)
+func TestKnob(t *testing.T) {
+	d := ConnectTestInstance(t)
+	defer d.Close()
+	api, err := d.CreateNewUser(username3, passwd)
+	if err != nil {
+		t.Fatal(err)
 	}
-	return nil, nil
+
+	send_knob := Knob{
+		KnobName: "siracusano II",
+		IsPublic: true,
+	}
+	err = d.CreateNewKnob(api, send_knob)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	recv_knob, err := d.GetUserKnobs(api)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if recv_knob[0].KnobName != "siracusano II" {
+		t.Fatal(err)
+	}
+
+	knob_id, err := d.GetKnobId(api, "siracusano II")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	identifier := recv_knob[0].Identifier
+
+	test_knob_id, err := d.GetKnobIdFromIdentifier(identifier)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if knob_id != test_knob_id {
+		t.Fatal("id should be same")
+	}
+
+	err = d.UpdateKnob(api, recv_knob[0].Identifier, "description", knob_description)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	k, err := d.GetKnobDescriptions(api, identifier)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if k.Description != knob_description {
+		t.Fatalf("WTMOOO %s", k.Description)
+	}
 }
