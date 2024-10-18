@@ -77,6 +77,7 @@ func (k Knob) Read(w http.ResponseWriter, r *http.Request) {
 	w.Write(knobs_json)
 }
 
+// update a single knob
 func (k Knob) Update(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {

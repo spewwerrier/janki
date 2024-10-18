@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 
@@ -86,6 +87,8 @@ func (db *Database) GetKnobIdFromIdentifier(identifier string) (int, error) {
 	return knobId, nil
 }
 
+// TODO: if api key is given then it returns all public and private knobs else get only public knob
+// we want error to be ignored
 func (db *Database) GetKnobDescriptions(api string, identifier string) (KnobDescription, error) {
 	knob := KnobDescription{}
 	id, err := db.GetKnobIdFromIdentifier(identifier)
@@ -93,12 +96,28 @@ func (db *Database) GetKnobDescriptions(api string, identifier string) (KnobDesc
 		db.log.Error("GetKnobDescriptions failed to get knob id from identifier")
 		return knob, err
 	}
-	query := "select description, topics, todo, tor, refs, urls, ques, suggestions from knobdescriptions where knob_id = $1"
-	result, err := db.Query(query, id)
+
+	user_id, err := db.GetUserId(api)
+	var result *sql.Rows
+	var query string
+
+	// if user id is incorrect or empty we give public stuff only
 	if err != nil {
-		db.log.Error("GetKnobDescriptions failed to execute query")
-		return knob, err
+		query = "select description, topics, todo, tor, refs, urls, ques, suggestions from knobdescriptions inner join knobs on knobs.id = knobdescriptions.id where knob_id = $1 and ispublic = true"
+		result, err = db.Query(query, id)
+		if err != nil {
+			db.log.Error("GetKnobDescriptions failed to execute query")
+			return knob, err
+		}
+	} else {
+		query = "select description, topics, todo, tor, refs, urls, ques, suggestions from knobdescriptions inner join knobs on knobs.id = knobdescriptions.id  inner join users on  knobs.user_id = users.id where knob_id = $1 and user_id = $2"
+		result, err = db.Query(query, id, user_id)
+		if err != nil {
+			db.log.Error("GetKnobDescriptions failed to execute query")
+			return knob, err
+		}
 	}
+
 	for result.Next() {
 		err = result.Scan(&knob.Description, &knob.Topics, &knob.Todo, &knob.Tor, &knob.Refs, &knob.Urls, &knob.Ques, &knob.Suggestions)
 		if err != nil {

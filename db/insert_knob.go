@@ -47,6 +47,12 @@ func (db *Database) CreateNewKnob(api_key string, knob Knob) error {
 	return nil
 }
 
+// TODO
 func (db *Database) DeleteKnob(cookie string) error {
+	return nil
+}
+
+// TODO: ForkAKnob
+func (db *Database) ForkKnob(api string) error {
 	return nil
 }
