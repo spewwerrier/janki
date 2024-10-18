@@ -18,6 +18,10 @@ func (db *Database) GetUserKnobs(api_key string) ([]Knob, error) {
 	}
 	query := "select knob_name,creation,ispublic, identifier from knobs inner join knobdescriptions on knobdescriptions.knob_id = knobs.id where knobs.user_id = $1 order by knobs.creation desc"
 	result, err := db.Query(query, id)
+	if err != nil {
+		db.log.Error(err.Error())
+		return nil, err
+	}
 	var i int
 	var knob Knob
 	var knobs []Knob

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -22,18 +23,15 @@ func (db *Database) RetriveUserIdFromCredentials(username string, password strin
 		return -1, err
 	}
 	if utils.CheckHash(hashed_password, password) {
-		result, err := db.raw.Query(query, username)
+		row, err := db.QueryRow(query, username)
 		if err != nil {
 			db.log.Error("RetriveUserIdFromCredentials " + err.Error())
 			return -1, jlog.ErrDbQueryError
 		}
 		var id int
-		var i int
-		for result.Next() {
-			_ = result.Scan(&id)
-			i++
-		}
-		if i == 0 {
+		err = row.Scan(&id)
+
+		if err == sql.ErrNoRows {
 			db.log.Warning("RetriveUserIdFromCredentaials: No user exists with name " + username)
 			return -1, jlog.ErrApiUserNoExist
 		}
@@ -49,34 +47,26 @@ func (db *Database) RetriveUserApi(username string, password string) (string, er
 		return "", err
 	}
 	query := "select session_key from sessions where user_id = $1"
-	result, err := db.raw.Query(query, id)
+	row, err := db.QueryRow(query, id)
 	if err != nil {
 		db.log.Error("RetriveUserApi " + err.Error())
 		return "", err
 	}
-	var i int
 	var session_key string
-	for result.Next() {
-		_ = result.Scan(&session_key)
-		i++
-	}
+	row.Scan(&session_key)
 	return session_key, err
 }
 
 func (db *Database) RetriveHashedPassword(username string) (string, error) {
 	query := "select password from users where username = $1"
-	result, err := db.raw.Query(query, username)
+	row, err := db.QueryRow(query, username)
 	if err != nil {
 		db.log.Error("RetriveHashedPassword " + err.Error())
 		return "", jlog.ErrDbQueryError
 	}
 	var password string
-	var i int
-	for result.Next() {
-		_ = result.Scan(&password)
-		i++
-	}
-	if i == 0 {
+	err = row.Scan(&password)
+	if err != nil {
 		db.log.Warning("RetriveHashedPassword user does not exists")
 		return "", jlog.ErrApiUserNoExist
 	}
@@ -116,13 +106,13 @@ func (db *Database) RetriveUser(api_key string) (UserDescription, error) {
 	}
 
 	query := "select users.username, usersdescriptions.creation, image_url, description, usersdescriptions.creation, sessions.session_key, sessions.creation from users inner join usersdescriptions on users.id = usersdescriptions.user_id  inner join sessions on users.id = sessions.user_id where users.id = $1"
-	rows := db.raw.QueryRow(query, id)
-	if rows.Err() != nil {
+	row, err := db.QueryRow(query, id)
+	if err != nil {
 		db.log.Error("RetriveUser failed to query the user information")
 		return UserDescription{}, nil
 	}
 	u := UserDescription{}
-	err = rows.Scan(
+	err = row.Scan(
 		&u.User.Name,
 		&u.Creation,
 		&u.Image_url,

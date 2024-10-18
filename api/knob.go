@@ -65,12 +65,12 @@ func (k Knob) Read(w http.ResponseWriter, r *http.Request) {
 
 	knobs, err := k.DB.GetUserKnobs(api_key)
 	if err != nil {
-		k.Log.ErrorHttp(http.StatusBadRequest, "failed to get knob", w)
+		k.Log.ErrorHttp(http.StatusBadRequest, "failed to get knob"+err.Error(), w)
 		return
 	}
 	knobs_json, err := json.Marshal(knobs)
 	if err != nil {
-		k.Log.ErrorHttp(http.StatusInternalServerError, "failed to encode the knobs", w)
+		k.Log.ErrorHttp(http.StatusInternalServerError, "failed to encode the knobs ", w)
 		return
 	}
 	fmt.Println(knobs)
@@ -89,11 +89,12 @@ func (k Knob) Update(w http.ResponseWriter, r *http.Request) {
 	ques := r.Form.Get("questions")
 	refs := r.Form.Get("refs")
 
-	fmt.Println(api_key, knob_id, ques)
 	if refs != "" {
+		fmt.Println(api_key, knob_id, ques)
 		k.DB.UpdateKnob(api_key, knob_id, "refs", refs)
 	}
 	if ques != "" {
+		fmt.Println("wtmoooo", api_key, knob_id, refs)
 		k.DB.UpdateKnob(api_key, knob_id, "ques", ques)
 	}
 }

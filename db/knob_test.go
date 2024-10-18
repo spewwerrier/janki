@@ -17,7 +17,8 @@ func TestKnobDuplications(t *testing.T) {
 
 	api1, err := d.CreateNewUser(username1, passwd)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("failed to create new user %v", err)
+		return
 	}
 	k := Knob{
 		KnobName: "Understanding atomic configuration of atomic bombs",
@@ -26,24 +27,28 @@ func TestKnobDuplications(t *testing.T) {
 
 	err = d.CreateNewKnob(api1, k)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("failed to create new knob %v", err)
+		return
 	}
 
 	// user creating a knob with same name twice results in error
 	err = d.CreateNewKnob(api1, k)
 	if err == nil {
 		t.Fatal("should throw multiple knobs exists but did not")
+		return
 	}
 
 	api2, err := d.CreateNewUser(username2, passwd)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 
 	// another user creating knob with same name as other user does not results in error
 	err = d.CreateNewKnob(api2, k)
 	if err != nil {
-		t.Fatal("WTMOOOOOOOOOOOOOOOOO", err)
+		t.Fatalf("failed to create new knob %v", err)
+		return
 	}
 }
 
@@ -53,6 +58,7 @@ func TestKnob(t *testing.T) {
 	api, err := d.CreateNewUser(username3, passwd)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 
 	send_knob := Knob{
@@ -62,19 +68,23 @@ func TestKnob(t *testing.T) {
 	err = d.CreateNewKnob(api, send_knob)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 
 	recv_knob, err := d.GetUserKnobs(api)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("failed to get user knob %v", err)
+		return
 	}
 	if recv_knob[0].KnobName != "siracusano II" {
-		t.Fatal(err)
+		t.Fatalf("failed to verify knobs")
+		return
 	}
 
 	knob_id, err := d.GetKnobId(api, "siracusano II")
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 
 	identifier := recv_knob[0].Identifier
@@ -82,23 +92,28 @@ func TestKnob(t *testing.T) {
 	test_knob_id, err := d.GetKnobIdFromIdentifier(identifier)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 
 	if knob_id != test_knob_id {
 		t.Fatal("id should be same")
+		return
 	}
 
 	err = d.UpdateKnob(api, recv_knob[0].Identifier, "description", knob_description)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 
 	k, err := d.GetKnobDescriptions(api, identifier)
 	if err != nil {
 		t.Fatal(err)
+		return
 	}
 
 	if k.Description != knob_description {
 		t.Fatalf("WTMOOO %s", k.Description)
+		return
 	}
 }

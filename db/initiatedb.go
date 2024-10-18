@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"janki/jlog"
-	// _ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func NewConnection(connection string, logfile string) *Database {
@@ -47,7 +46,7 @@ func (d *Database) Create_db() error {
 	}
 
 	// KnobDescriptions
-	_, err = d.raw.Exec("create table if not exists KnobDescriptions (knob_id integer references Knobs(id) on delete cascade, topics text[], todo text[], tor text[], refs text[], urls text[], ques text[], description text, suggestions text[])")
+	_, err = d.raw.Exec("create table if not exists KnobDescriptions (id serial primary key, knob_id integer references Knobs(id) on delete cascade, topics text[], todo text[], tor text[], refs text[], urls text[], ques text[], description text, suggestions text[])")
 	if err != nil {
 		return err
 	}

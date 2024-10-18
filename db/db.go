@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"janki/jlog"
 )
 
@@ -31,4 +32,14 @@ func (db *Database) Query(query string, args ...interface{}) (*sql.Rows, error) 
 		return nil, err
 	}
 	return rows, nil
+}
+
+func (db *Database) QueryRow(query string, args ...interface{}) (*sql.Row, error) {
+	db.log.Info(fmt.Sprintf("querying query: %s with args: %v", query, args))
+	row := db.raw.QueryRow(query, args...)
+	if row.Err() != nil {
+		db.log.Error(fmt.Sprintf("Query failed: %s, error: %v", query, row.Err()))
+		return nil, row.Err()
+	}
+	return row, nil
 }

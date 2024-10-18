@@ -10,11 +10,12 @@ func (db *Database) UpdateKnob(api_key string, identifier string, key string, va
 		return err
 	}
 	var query string
-	if key == "description" || key == "image_url" {
+	if key == "description" {
 		query = fmt.Sprintf("UPDATE knobdescriptions  SET %s = $1  WHERE knob_id = $2", key)
 	} else {
 		query = fmt.Sprintf("UPDATE knobdescriptions  SET %s = %s || ARRAY[$1]  WHERE knob_id = $2", key, key)
 	}
+	fmt.Println(query, value, knob_id)
 	_, err = db.raw.Exec(query, value, knob_id)
 	if err != nil {
 		db.log.Error("UpdateUser: Failed to update user " + err.Error())

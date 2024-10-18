@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"janki/db"
@@ -95,20 +94,21 @@ func (u Users) Update(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("updated description"))
 }
 
+// read username and password and retrive API keys
 func (u Users) Read(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		u.Log.ErrorHttp(http.StatusBadRequest, "failed to parse form", w)
 		return
 	}
-	api := r.Form.Get("api_key")
-	user, err := u.DB.RetriveUser(api)
+	username := r.Form.Get("username")
+	password := r.Form.Get("password")
+	api, err := u.DB.RetriveUserApi(username, password)
 	if err != nil {
 		u.Log.ErrorHttp(http.StatusInternalServerError, "cannot retrive user session"+err.Error(), w)
 		return
 	}
-	v, _ := json.Marshal(user)
-	w.Write(v)
+	w.Write([]byte(api))
 }
 
 func (u Users) Regenerate(w http.ResponseWriter, r *http.Request) {

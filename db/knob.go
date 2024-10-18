@@ -10,7 +10,7 @@ type Knob struct {
 	Creation   time.Time
 	KnobName   string
 	Identifier string
-	ForkOf     int
+	ForkOf     string
 	IsPublic   bool
 }
 
