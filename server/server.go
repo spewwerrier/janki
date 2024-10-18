@@ -1,12 +1,14 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"janki/api"
 	"janki/db"
@@ -14,7 +16,8 @@ import (
 )
 
 func Server() {
-	database := db.NewConnection("user=janki dbname=janki password=janki sslmode=disable port=5555", "dblogs.log")
+	database := db.NewConnection(os.Getenv("DB_URL"), "dblogs.log")
+	defer database.Close()
 	logger := jlog.NewLogger("apilogs.log")
 	err := database.Create_db()
 	if err != nil {
@@ -27,21 +30,20 @@ func Server() {
 	}
 
 	s := &http.Server{
-		Addr:    "0.0.0.0:8080",
-		Handler: Middleware(Handler(api)),
+		Addr:        "0.0.0.0:8080",
+		Handler:     Middleware(Handler(api)),
+		ReadTimeout: time.Second * 2,
+		BaseContext: nil,
 	}
 	log.Println("listening on http://localhost:8080")
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	signal.Notify(c, syscall.SIGTERM)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		err := s.ListenAndServe()
-		if err != nil {
-			s.Close()
-			panic(err)
-		}
+		s.ListenAndServe()
 	}()
 	<-c
-	s.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	s.Shutdown(ctx)
 	fmt.Println("closing server")
 }

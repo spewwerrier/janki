@@ -1,7 +1,9 @@
 package db
 
 import (
+	"context"
 	"errors"
+	"time"
 
 	"janki/jlog"
 	"janki/utils"
@@ -80,10 +82,14 @@ func (db *Database) RetriveHashedPassword(username string) (string, error) {
 }
 
 func (db *Database) RetriveUserIdFromApi(api_key string) (int, error) {
+	ctx, cancel := context.WithTimeout(db.ctx, time.Second*5)
+	defer cancel()
 	query := "select user_id from sessions where session_key = $1"
-	result, err := db.raw.Query(query, api_key)
+	result, err := db.raw.QueryContext(ctx, query, api_key)
+	// TODO: implement context so 5 seconds delay would be cancelled
+	// time.Sleep(time.Second * 3)
 	if err != nil {
-		db.log.Error("RetriveUserIdFromApi failed to query the database")
+		db.log.Error("RetriveUserIdFromApi failed to query the database" + err.Error())
 		return -1, err
 	}
 	var id int

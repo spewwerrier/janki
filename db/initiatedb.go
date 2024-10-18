@@ -1,13 +1,12 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"log"
-	"sync"
 
 	"janki/jlog"
-
-	_ "github.com/lib/pq"
+	// _ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func NewConnection(connection string, logfile string) *Database {
@@ -16,12 +15,16 @@ func NewConnection(connection string, logfile string) *Database {
 		log.Panic(err)
 	}
 	logs := jlog.NewLogger(logfile)
-	mutex := sync.Mutex{}
+	ctx := context.Background()
 	return &Database{
 		raw: db,
 		log: logs,
-		mu:  &mutex,
+		ctx: ctx,
 	}
+}
+
+func (d *Database) Close() {
+	d.raw.Close()
 }
 
 func (d *Database) Create_db() error {

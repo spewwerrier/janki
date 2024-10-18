@@ -47,14 +47,6 @@ func (db *Database) CreateNewKnob(api_key string, knob Knob) error {
 	return nil
 }
 
-func (db *Database) CreateKnobDescriptions(session_key string) error {
-	return nil
-}
-
-func (db *Database) UpdateKnobDescriptions(cookie string) error {
-	return nil
-}
-
 func (db *Database) DeleteKnob(cookie string) error {
 	return nil
 }

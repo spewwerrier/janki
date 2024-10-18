@@ -61,7 +61,7 @@ func (db *Database) CreateNewUser(username string, password string, image_url st
 
 func (db *Database) GetUserId(session_key string) (int, error) {
 	query := "select user_id from sessions where session_key = $1"
-	result, err := db.raw.Query(query, session_key)
+	result, err := db.Query(query, session_key)
 	if err != nil {
 		return -1, jlog.ErrDbQueryError
 	}
@@ -88,7 +88,7 @@ func (db *Database) CreateUserDescription(session_key string, image_url string, 
 	}
 
 	query := "select from usersdescriptions where user_id = $1"
-	result, err := db.raw.Query(query, user_id)
+	result, err := db.Query(query, user_id)
 	if err != nil {
 		return err
 	}

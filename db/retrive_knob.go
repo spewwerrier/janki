@@ -17,7 +17,7 @@ func (db *Database) GetUserKnobs(api_key string) ([]Knob, error) {
 		return nil, err
 	}
 	query := "select knob_name,creation,ispublic, identifier from knobs inner join knobdescriptions on knobdescriptions.knob_id = knobs.id where knobs.user_id = $1 order by knobs.creation desc"
-	result, err := db.raw.Query(query, id)
+	result, err := db.Query(query, id)
 	var i int
 	var knob Knob
 	var knobs []Knob
@@ -42,7 +42,7 @@ func (db *Database) GetKnobId(api_key string, knob_name string) (int, error) {
 		return -1, err
 	}
 	query := "select id from knobs where user_id = $1 and knob_name = $2"
-	result, err := db.raw.Query(query, id, knob_name)
+	result, err := db.Query(query, id, knob_name)
 	if err != nil {
 		return -1, err
 	}
@@ -63,7 +63,7 @@ func (db *Database) GetKnobId(api_key string, knob_name string) (int, error) {
 
 func (db *Database) GetKnobIdFromIdentifier(identifier string) (int, error) {
 	query := "select id from knobs where identifier = $1"
-	result, err := db.raw.Query(query, identifier)
+	result, err := db.Query(query, identifier)
 	if err != nil {
 		return -1, err
 	}
@@ -90,7 +90,7 @@ func (db *Database) GetKnobDescriptions(api string, identifier string) (KnobDesc
 		return knob, err
 	}
 	query := "select description, topics, todo, tor, refs, urls, ques, suggestions from knobdescriptions where knob_id = $1"
-	result, err := db.raw.Query(query, id)
+	result, err := db.Query(query, id)
 	if err != nil {
 		db.log.Error("GetKnobDescriptions failed to execute query")
 		return knob, err
