@@ -100,7 +100,7 @@ func TestKnob(t *testing.T) {
 		return
 	}
 
-	err = d.UpdateKnob(api, recv_knob[0].Identifier, "description", knob_description)
+	err = d.UpdateKnobDescriptions(api, recv_knob[0].Identifier, "description", knob_description)
 	if err != nil {
 		t.Fatal(err)
 		return

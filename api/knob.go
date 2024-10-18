@@ -87,15 +87,22 @@ func (k Knob) Update(w http.ResponseWriter, r *http.Request) {
 
 	api_key := r.Form.Get("api_key")
 	knob_id := r.Form.Get("knob_id")
+
+	ispublic := r.Form.Get("ispublic")
 	ques := r.Form.Get("questions")
 	refs := r.Form.Get("refs")
 
 	if refs != "" {
 		fmt.Println(api_key, knob_id, ques)
-		k.DB.UpdateKnob(api_key, knob_id, "refs", refs)
+		k.DB.UpdateKnobDescriptions(api_key, knob_id, "refs", refs)
 	}
 	if ques != "" {
 		fmt.Println("wtmoooo", api_key, knob_id, refs)
-		k.DB.UpdateKnob(api_key, knob_id, "ques", ques)
+		k.DB.UpdateKnobDescriptions(api_key, knob_id, "ques", ques)
+	}
+	if ispublic != "" {
+		fmt.Println("wtmoooo", api_key, knob_id, ispublic)
+		k.DB.UpdateKnobPublic(api_key, knob_id, ispublic)
+
 	}
 }
