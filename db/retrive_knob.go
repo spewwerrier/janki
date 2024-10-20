@@ -102,19 +102,21 @@ func (db *Database) GetKnobDescriptions(api string, identifier string) (KnobDesc
 
 	user_id, err := db.GetUserId(api)
 	var result pgx.Rows
-	var query string
 
-	// if user id is incorrect or empty we give public stuff only
+	query := "select * from knobs where user_id = $1 and identifier = $2"
+	rows := db.QueryRow(query, user_id, identifier)
+	err = rows.Scan()
+	// if there is no error it means the original user is asking for the knob so we give the knob even if its private
 	if err != nil {
-		query = "select description, topics, todo, tor, refs, urls, ques, suggestions from knobdescriptions inner join knobs on knobs.id = knobdescriptions.id where knob_id = $1 and ispublic = true"
+		query = "select knobs.knob_name, knobs.identifier, description, topics, todo, tor, refs, urls, ques, suggestions, knobs.ispublic from knobdescriptions inner join knobs on knobs.id = knobdescriptions.id where knob_id = $1 and ispublic = true"
 		result, err = db.Query(query, id)
 		if err != nil {
 			db.log.Error("GetKnobDescriptions failed to execute query")
 			return knob, err
 		}
 	} else {
-		query = "select description, topics, todo, tor, refs, urls, ques, suggestions from knobdescriptions inner join knobs on knobs.id = knobdescriptions.id  inner join users on  knobs.user_id = users.id where knob_id = $1 and user_id = $2"
-		result, err = db.Query(query, id, user_id)
+		query = "select knobs.knob_name, knobs.identifier, description, topics, todo, tor, refs, urls, ques, suggestions, knobs.ispublic from knobdescriptions inner join knobs on knobs.id = knobdescriptions.id  inner join users on  knobs.user_id = users.id where knob_id = $1 and user_id = $2"
+		result, err = db.Query(query, id)
 		if err != nil {
 			db.log.Error("GetKnobDescriptions failed to execute query")
 			return knob, err
@@ -122,7 +124,7 @@ func (db *Database) GetKnobDescriptions(api string, identifier string) (KnobDesc
 	}
 
 	for result.Next() {
-		err = result.Scan(&knob.Description, &knob.Topics, &knob.Todo, &knob.Tor, &knob.Refs, &knob.Urls, &knob.Ques, &knob.Suggestions)
+		err = result.Scan(&knob.Knob.KnobName, &knob.Knob.Identifier, &knob.Description, &knob.Topics, &knob.Todo, &knob.Tor, &knob.Refs, &knob.Urls, &knob.Ques, &knob.Suggestions, &knob.Knob.IsPublic)
 		if err != nil {
 			log.Panic(err)
 		}

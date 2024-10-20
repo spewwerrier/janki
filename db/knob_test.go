@@ -22,19 +22,21 @@ func TestKnobDuplications(t *testing.T) {
 		t.Fatalf("failed to create new user %v", err)
 		return
 	}
-	k := Knob{
-		KnobName: "Understanding atomic configuration of atomic bombs",
-		IsPublic: true,
+	k := KnobDescription{
+		Knob: Knob{
+			KnobName: "Understanding atomic configuration of atomic bombs",
+			IsPublic: true,
+		},
 	}
 
-	err = d.CreateNewKnob(api1, k)
+	_, err = d.CreateNewKnob(api1, k)
 	if err != nil {
 		t.Fatalf("failed to create new knob %v", err)
 		return
 	}
 
 	// user creating a knob with same name twice results in error
-	err = d.CreateNewKnob(api1, k)
+	_, err = d.CreateNewKnob(api1, k)
 	if err == nil {
 		t.Fatal("should throw multiple knobs exists but did not")
 		return
@@ -47,11 +49,12 @@ func TestKnobDuplications(t *testing.T) {
 	}
 
 	// another user creating knob with same name as other user does not results in error
-	err = d.CreateNewKnob(api2, k)
+	_, err = d.CreateNewKnob(api2, k)
 	if err != nil {
 		t.Fatalf("failed to create new knob %v", err)
 		return
 	}
+	KnobForkTests(t, d, api1, api2)
 }
 
 func TestKnob(t *testing.T) {
@@ -63,11 +66,13 @@ func TestKnob(t *testing.T) {
 		return
 	}
 
-	send_knob := Knob{
-		KnobName: "siracusano II",
-		IsPublic: true,
+	send_knob := KnobDescription{
+		Knob: Knob{
+			KnobName: "siracusano II",
+			IsPublic: true,
+		},
 	}
-	err = d.CreateNewKnob(api, send_knob)
+	_, err = d.CreateNewKnob(api, send_knob)
 	if err != nil {
 		t.Fatal(err)
 		return
@@ -143,5 +148,28 @@ func TestKnob(t *testing.T) {
 		if v.Elements[i] != k.Ques.Elements[i] {
 			t.Fatal("knob elements are not same, they are not updated")
 		}
+	}
+}
+
+func KnobForkTests(t *testing.T, db *Database, api1 string, api2 string) {
+	k := KnobDescription{
+		Knob: Knob{
+			KnobName: "Learning C++",
+			IsPublic: true,
+		},
+		Description: "By user 1",
+	}
+	identifier, err := db.CreateNewKnob(api1, k)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = db.ForkKnob(api2, identifier)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = db.GetKnobId(api2, "Learning C++")
+	if err != nil {
+		t.Fatalf("failed to get knobid: %v", err)
 	}
 }

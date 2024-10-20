@@ -15,6 +15,7 @@ type Knob struct {
 }
 
 type KnobDescription struct {
+	Knob        Knob                 `json:"Knob"`
 	Description string               `json:"Description"`
 	Topics      pgtype.Array[string] `json:"Topics"`
 	Todo        pgtype.Array[string] `json:"Todo"`

@@ -43,7 +43,7 @@ func (d *Database) Create_db() error {
 	}
 
 	// Knob
-	_, err = d.Execute("create table if not exists Knobs (id serial primary key, user_id integer references Users(id) on delete cascade, knob_name text, creation timestamp default current_timestamp not null, forkof integer references Knobs(id), ispublic bool, identifier text)")
+	_, err = d.Execute("create table if not exists Knobs (id serial primary key, user_id integer references Users(id) on delete cascade, knob_name text, creation timestamp default current_timestamp not null, forkof text, ispublic bool, identifier text)")
 	if err != nil {
 		return err
 	}
