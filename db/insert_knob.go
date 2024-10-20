@@ -26,7 +26,7 @@ func (db *Database) CreateNewKnob(api_key string, knob Knob) error {
 	knob.Identifier = utils.GenerateIdentifier(int64(id))
 
 	query := "insert into knobs (user_id, knob_name, ispublic, identifier) values ($1, $2, $3, $4)"
-	_, err = db.raw.Exec(query, id, knob.KnobName, knob.IsPublic, knob.Identifier)
+	_, err = db.Execute(query, id, knob.KnobName, knob.IsPublic, knob.Identifier)
 	if err != nil {
 		db.log.Error("CreateNewKnob failed to create knob: " + query)
 		return err
@@ -38,7 +38,7 @@ func (db *Database) CreateNewKnob(api_key string, knob Knob) error {
 	}
 
 	query = "insert into knobdescriptions (knob_id, description) values ($1, $2)"
-	_, err = db.raw.Exec(query, knobId, "this is a sample knob")
+	_, err = db.Execute(query, knobId, "this is a sample knob")
 	if err != nil {
 		db.log.Error("CreateNewKnob failed to create knob descriptions: " + query)
 		return err

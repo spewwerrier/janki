@@ -2,6 +2,8 @@ package db
 
 import (
 	"testing"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const (
@@ -115,5 +117,31 @@ func TestKnob(t *testing.T) {
 	if k.Description != knob_description {
 		t.Fatalf("WTMOOO %s", k.Description)
 		return
+	}
+
+	err = d.UpdateKnobDescriptions(api, recv_knob[0].Identifier, "ques", "how to cook a carrot")
+	if err != nil {
+		t.Fatal("failed to update ques property")
+	}
+	err = d.UpdateKnobDescriptions(api, recv_knob[0].Identifier, "ques", "how to cook a carrot part 2")
+	if err != nil {
+		t.Fatal("failed to update ques property")
+	}
+
+	k, err = d.GetKnobDescriptions(api, recv_knob[0].Identifier)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var v pgtype.Array[string]
+
+	v.Elements = []string{
+		"how to cook a carrot",
+		"how to cook a carrot part 2",
+	}
+
+	for i := range len(v.Elements) {
+		if v.Elements[i] != k.Ques.Elements[i] {
+			t.Fatal("knob elements are not same, they are not updated")
+		}
 	}
 }

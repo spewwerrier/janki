@@ -11,17 +11,18 @@ import (
 
 // creates new user and returns their api key
 func (db *Database) CreateNewUser(username string, password string) (string, error) {
-	does, err := db.CheckDuplicateUser(username)
-	if err == jlog.ErrApiMultipleUsers {
+	err := db.CheckDuplicateUser(username)
+	if err != nil {
+		db.log.Error("CreateNewUser duplicate user found")
 		return "", jlog.ErrApiMultipleUsers
 	}
 
-	if does {
-		return "", errors.New("duplicate user exists")
-	}
+	// if does {
+	// 	return "", errors.New("duplicate user exists")
+	// }
 
 	query := "insert into users (username, password) values ($1, $2)"
-	_, err = db.raw.Exec(query, username, utils.HashBcrypt(password))
+	_, err = db.Execute(query, username, utils.HashBcrypt(password))
 	if err != nil {
 		db.log.Warning(err.Error())
 		return "", jlog.ErrDbExecError
@@ -38,7 +39,7 @@ func (db *Database) CreateNewUser(username string, password string) (string, err
 	if err != nil {
 		return "", err
 	}
-	_, err = db.raw.Exec(query, user_id, "something", "something")
+	_, err = db.Execute(query, user_id, "something", "something")
 	if err != nil {
 		return "", jlog.ErrDbExecError
 	}
@@ -88,7 +89,7 @@ func (db *Database) CreateUserDescription(session_key string, image_url string, 
 	}
 
 	query = "insert into usersdescriptions (user_id, image_url, description) values ($1, $2, $3)"
-	_, err = db.raw.Exec(query, user_id, image_url, description)
+	_, err = db.Execute(query, user_id, image_url, description)
 	if err != nil {
 		return err
 	}
@@ -101,7 +102,7 @@ func (db *Database) RegenerateSessionKey(username string, password string) (stri
 	if err != nil {
 		return "", err
 	}
-	_, err = db.raw.Exec(query, id)
+	_, err = db.Execute(query, id)
 	if err != nil {
 		return "", err
 	}
@@ -124,7 +125,7 @@ func (db *Database) GenerateApiKey(username string, password string) (string, er
 	}
 
 	sql := "insert into sessions (session_key, user_id) values ($1, $2)"
-	_, err = db.raw.Exec(sql, api_key, id)
+	_, err = db.Execute(sql, api_key, id)
 	fmt.Println(api_key)
 	if err != nil {
 		db.log.Error("error while inserting session key in generatesessionkey\n" + err.Error())
@@ -134,10 +135,10 @@ func (db *Database) GenerateApiKey(username string, password string) (string, er
 	return api_key, nil
 }
 
-func (db *Database) CheckDuplicateUser(username string) (bool, error) {
+func (db *Database) CheckDuplicateUser(username string) error {
 	_, err := db.RetriveUserIdFromCredentials(username, "")
 	if err == jlog.ErrApiUserNoExist {
-		return false, nil
+		return nil
 	}
-	return true, jlog.ErrApiMultipleUsers
+	return jlog.ErrApiMultipleUsers
 }

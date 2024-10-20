@@ -3,7 +3,7 @@ package db
 import (
 	"time"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Knob struct {
@@ -15,12 +15,12 @@ type Knob struct {
 }
 
 type KnobDescription struct {
-	Description string         `json:"Description"`
-	Topics      pq.StringArray `json:"Topics"`
-	Todo        pq.StringArray `json:"Todo"`
-	Tor         pq.StringArray `json:"Tor"`
-	Refs        pq.StringArray `json:"Refs"`
-	Urls        pq.StringArray `json:"Urls"`
-	Ques        pq.StringArray `json:"Ques"`
-	Suggestions pq.StringArray `json:"Suggestions"`
+	Description string               `json:"Description"`
+	Topics      pgtype.Array[string] `json:"Topics"`
+	Todo        pgtype.Array[string] `json:"Todo"`
+	Tor         pgtype.Array[string] `json:"Tor"`
+	Refs        pgtype.Array[string] `json:"Refs"`
+	Urls        pgtype.Array[string] `json:"Urls"`
+	Ques        pgtype.Array[string] `json:"Ques"`
+	Suggestions pgtype.Array[string] `json:"Suggestions"`
 }

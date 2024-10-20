@@ -1,11 +1,12 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
 	"janki/jlog"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // takes api key and returns a knob
@@ -15,6 +16,7 @@ import (
 func (db *Database) GetUserKnobs(api_key string) ([]Knob, error) {
 	id, err := db.RetriveUserIdFromApi(api_key)
 	if err != nil {
+		db.log.Error("GetUserKnob failed to get user id")
 		return nil, err
 	}
 	query := "select knob_name,creation,ispublic, identifier from knobs inner join knobdescriptions on knobdescriptions.knob_id = knobs.id where knobs.user_id = $1 order by knobs.creation desc"
@@ -33,6 +35,7 @@ func (db *Database) GetUserKnobs(api_key string) ([]Knob, error) {
 		knobs = append(knobs, knob)
 	}
 	if i < 1 {
+		db.log.Warning("GetUserKnobs no knob exists")
 		return nil, jlog.ErrNoKnobExists
 	}
 	return knobs, nil
@@ -98,7 +101,7 @@ func (db *Database) GetKnobDescriptions(api string, identifier string) (KnobDesc
 	}
 
 	user_id, err := db.GetUserId(api)
-	var result *sql.Rows
+	var result pgx.Rows
 	var query string
 
 	// if user id is incorrect or empty we give public stuff only

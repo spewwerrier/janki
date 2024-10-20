@@ -9,7 +9,7 @@ func (db *Database) UpdateUser(api_key string, key string, value string) error {
 		db.log.Error("UpdateUser: Failed to get user id " + err.Error())
 		return err
 	}
-	_, err = db.raw.Exec(query, value, id)
+	_, err = db.Execute(query, value, id)
 	fmt.Println(query, value, id)
 	if err != nil {
 		db.log.Error("UpdateUser: Failed to update user " + err.Error())
