@@ -44,13 +44,13 @@ func (db *Database) RetriveUserApi(username string, password string) (string, er
 	}
 	query := "select session_key from sessions where user_id = $1"
 	row := db.QueryRow(query, id)
-	var session_key string
-	err = row.Scan(&session_key)
+	var api_key string
+	err = row.Scan(&api_key)
 	if err != nil {
 		db.log.Error("RetriveUserApi " + err.Error())
 		return "", err
 	}
-	return session_key, err
+	return api_key, err
 }
 
 func (db *Database) RetriveHashedPassword(username string) (string, error) {
@@ -77,13 +77,6 @@ func (db *Database) RetriveUserIdFromApi(api_key string) (int, error) {
 	}
 	fmt.Println(id)
 	return id, nil
-}
-
-func (db *Database) CheckDuplicateknobs(session_key string, knob_name string) error {
-	// get a knob with knob_name and id = session_key
-	// if exists then duplicate
-
-	return nil
 }
 
 func (db *Database) RetriveUser(api_key string) (UserDescription, error) {

@@ -47,9 +47,9 @@ func (db *Database) CreateNewUser(username string, password string) (string, err
 	return api_key, nil
 }
 
-func (db *Database) GetUserId(session_key string) (int, error) {
+func (db *Database) GetUserId(api_key string) (int, error) {
 	query := "select user_id from sessions where session_key = $1"
-	result, err := db.Query(query, session_key)
+	result, err := db.Query(query, api_key)
 	if err != nil {
 		return -1, jlog.ErrDbQueryError
 	}
@@ -79,11 +79,11 @@ func (db *Database) RegenerateSessionKey(username string, password string) (stri
 	if err != nil {
 		return "", err
 	}
-	session_key, err := db.GenerateApiKey(username, password)
+	api_key, err := db.GenerateApiKey(username, password)
 	if err != nil {
 		return "", err
 	}
-	return session_key, nil
+	return api_key, nil
 }
 
 func (db *Database) DeleteAccount(cookie string) error {

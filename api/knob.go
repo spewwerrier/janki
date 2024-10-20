@@ -24,7 +24,8 @@ func (k Knob) Create(w http.ResponseWriter, r *http.Request) {
 
 	api_key := r.Form.Get("api_key")
 	knob_name := r.Form.Get("knob_name")
-	// this gives identifier
+	// if fork is mentioned then it should be with an identifier to which knob to fork
+	// note that you cannot fork a private knob
 	identifier := r.Form.Get("fork")
 
 	k.Log.Info(api_key)
@@ -110,20 +111,35 @@ func (k Knob) Update(w http.ResponseWriter, r *http.Request) {
 	knob_id := r.Form.Get("knob_id")
 
 	ispublic := r.Form.Get("ispublic")
-	ques := r.Form.Get("questions")
-	refs := r.Form.Get("refs")
 
-	if refs != "" {
-		fmt.Println(api_key, knob_id, ques)
-		k.DB.UpdateKnobDescriptions(api_key, knob_id, "refs", refs)
+	v := map[string]string{
+		"topics":      r.Form.Get("topics"),
+		"todo":        r.Form.Get("todo"),
+		"tor":         r.Form.Get("tor"),
+		"refs":        r.Form.Get("refs"),
+		"urls":        r.Form.Get("urls"),
+		"ques":        r.Form.Get("ques"),
+		"description": r.Form.Get("description"),
+		"suggestion":  r.Form.Get("suggestions"),
 	}
-	if ques != "" {
-		fmt.Println("wtmoooo", api_key, knob_id, refs)
-		k.DB.UpdateKnobDescriptions(api_key, knob_id, "ques", ques)
+	for index, i := range v {
+		if i != "" {
+			err = k.DB.UpdateKnobDescriptions(api_key, knob_id, index, v[index])
+			if err != nil {
+				k.Log.ErrorHttp(http.StatusInternalServerError, "failed to update knob property "+i, w)
+				return
+
+			}
+		}
 	}
+
 	if ispublic != "" {
 		fmt.Println("wtmoooo", api_key, knob_id, ispublic)
 		k.DB.UpdateKnobPublic(api_key, knob_id, ispublic)
+		if err != nil {
+			k.Log.ErrorHttp(http.StatusInternalServerError, "failed to change knob visibility", w)
+			return
 
+		}
 	}
 }
