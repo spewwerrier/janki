@@ -69,33 +69,6 @@ func (db *Database) GetUserId(session_key string) (int, error) {
 	return user_id, nil
 }
 
-func (db *Database) CreateUserDescription(session_key string, image_url string, description string) error {
-	user_id, err := db.GetUserId(session_key)
-	if err != nil {
-		return err
-	}
-
-	query := "select from usersdescriptions where user_id = $1"
-	result, err := db.Query(query, user_id)
-	if err != nil {
-		return err
-	}
-	var i int
-	for result.Next() {
-		i++
-	}
-	if i > 0 {
-		return errors.New("descriptions already exists")
-	}
-
-	query = "insert into usersdescriptions (user_id, image_url, description) values ($1, $2, $3)"
-	_, err = db.Execute(query, user_id, image_url, description)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (db *Database) RegenerateSessionKey(username string, password string) (string, error) {
 	query := "delete from sessions where id = $1"
 	id, err := db.RetriveUserIdFromCredentials(username, password)

@@ -48,23 +48,6 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(cookie.Value))
 }
 
-func (u Users) CreateDescription(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		u.Log.ErrorHttp(http.StatusBadRequest, "failed to parse form", w)
-		return
-	}
-	session_key := r.Form.Get("session_key")
-	image_url := r.Form.Get("image_url")
-	description := r.Form.Get("description")
-	err = u.DB.CreateUserDescription(session_key, image_url, description)
-	if err != nil {
-		u.Log.ErrorHttp(http.StatusInternalServerError, "cannot create user description", w)
-		return
-	}
-	_, _ = w.Write([]byte("created description"))
-}
-
 func (u Users) Update(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
