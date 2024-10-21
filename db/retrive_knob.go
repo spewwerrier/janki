@@ -90,8 +90,7 @@ func (db *Database) GetKnobIdFromIdentifier(identifier string) (int, error) {
 	return knobId, nil
 }
 
-// TODO: if api key is given then it returns all public and private knobs else get only public knob
-// we want error to be ignored
+// if api key is given and its correct then it returns all public and private knobs else get only public knob
 func (db *Database) GetKnobDescriptions(api string, identifier string) (KnobDescription, error) {
 	knob := KnobDescription{}
 	id, err := db.GetKnobIdFromIdentifier(identifier)
@@ -103,9 +102,11 @@ func (db *Database) GetKnobDescriptions(api string, identifier string) (KnobDesc
 	user_id, err := db.GetUserId(api)
 	var result pgx.Rows
 
-	query := "select * from knobs where user_id = $1 and identifier = $2"
+	query := "select id from knobs where user_id = $1 and identifier = $2"
 	rows := db.QueryRow(query, user_id, identifier)
-	err = rows.Scan()
+	var knobid int
+	err = rows.Scan(&knobid)
+	fmt.Println(knobid, user_id, identifier)
 	// if there is no error it means the original user is asking for the knob so we give the knob even if its private
 	if err != nil {
 		query = "select knobs.knob_name, knobs.identifier, knobs.creation, description, topics, todo, tor, refs, urls, ques, suggestions, knobs.ispublic from knobdescriptions inner join knobs on knobs.id = knobdescriptions.id where knob_id = $1 and ispublic = true"
@@ -116,7 +117,7 @@ func (db *Database) GetKnobDescriptions(api string, identifier string) (KnobDesc
 		}
 	} else {
 		query = "select knobs.knob_name, knobs.identifier, knobs.creation, description, topics, todo, tor, refs, urls, ques, suggestions, knobs.ispublic from knobdescriptions inner join knobs on knobs.id = knobdescriptions.id  inner join users on  knobs.user_id = users.id where knob_id = $1 and user_id = $2"
-		result, err = db.Query(query, id)
+		result, err = db.Query(query, id, user_id)
 		if err != nil {
 			db.log.Error("GetKnobDescriptions failed to execute query")
 			return knob, err
