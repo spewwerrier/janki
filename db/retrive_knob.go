@@ -108,14 +108,14 @@ func (db *Database) GetKnobDescriptions(api string, identifier string) (KnobDesc
 	err = rows.Scan()
 	// if there is no error it means the original user is asking for the knob so we give the knob even if its private
 	if err != nil {
-		query = "select knobs.knob_name, knobs.identifier, description, topics, todo, tor, refs, urls, ques, suggestions, knobs.ispublic from knobdescriptions inner join knobs on knobs.id = knobdescriptions.id where knob_id = $1 and ispublic = true"
+		query = "select knobs.knob_name, knobs.identifier, knobs.creation, description, topics, todo, tor, refs, urls, ques, suggestions, knobs.ispublic from knobdescriptions inner join knobs on knobs.id = knobdescriptions.id where knob_id = $1 and ispublic = true"
 		result, err = db.Query(query, id)
 		if err != nil {
 			db.log.Error("GetKnobDescriptions failed to execute query")
 			return knob, err
 		}
 	} else {
-		query = "select knobs.knob_name, knobs.identifier, description, topics, todo, tor, refs, urls, ques, suggestions, knobs.ispublic from knobdescriptions inner join knobs on knobs.id = knobdescriptions.id  inner join users on  knobs.user_id = users.id where knob_id = $1 and user_id = $2"
+		query = "select knobs.knob_name, knobs.identifier, knobs.creation, description, topics, todo, tor, refs, urls, ques, suggestions, knobs.ispublic from knobdescriptions inner join knobs on knobs.id = knobdescriptions.id  inner join users on  knobs.user_id = users.id where knob_id = $1 and user_id = $2"
 		result, err = db.Query(query, id)
 		if err != nil {
 			db.log.Error("GetKnobDescriptions failed to execute query")
@@ -124,7 +124,7 @@ func (db *Database) GetKnobDescriptions(api string, identifier string) (KnobDesc
 	}
 
 	for result.Next() {
-		err = result.Scan(&knob.Knob.KnobName, &knob.Knob.Identifier, &knob.Description, &knob.Topics, &knob.Todo, &knob.Tor, &knob.Refs, &knob.Urls, &knob.Ques, &knob.Suggestions, &knob.Knob.IsPublic)
+		err = result.Scan(&knob.Knob.KnobName, &knob.Knob.Identifier, &knob.Knob.Creation, &knob.Description, &knob.Topics, &knob.Todo, &knob.Tor, &knob.Refs, &knob.Urls, &knob.Ques, &knob.Suggestions, &knob.Knob.IsPublic)
 		if err != nil {
 			log.Panic(err)
 		}

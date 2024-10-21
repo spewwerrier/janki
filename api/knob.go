@@ -75,6 +75,7 @@ func (k Knob) Read(w http.ResponseWriter, r *http.Request) {
 
 	if identifier != "" {
 		knob, _ := k.DB.GetKnobDescriptions(api_key, identifier)
+
 		knobs_json, err := json.Marshal(knob)
 		if err != nil {
 			k.Log.ErrorHttp(http.StatusInternalServerError, "failed to encode the knobs", w)
