@@ -7,7 +7,7 @@ type User struct {
 }
 
 type UserDescription struct {
-	Session        Session   `json:"Session"`
+	Api            Api       `json:"Api"`
 	Creation       time.Time `json:"Creation"`
 	User           User      `json:"Info"`
 	Image_url      string    `json:"ImageUrl"`
@@ -15,7 +15,7 @@ type UserDescription struct {
 	Existing_knobs int       `json:"ExistingKnobs"`
 }
 
-type Session struct {
+type Api struct {
 	Creation time.Time `json:"Creation"`
 	ApiKey   string    `json:"ApiKey"`
 }

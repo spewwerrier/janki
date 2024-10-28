@@ -16,6 +16,7 @@ var (
 )
 
 var (
-	ErrKnobAlreadyExists = errors.New("Knob already exists")
-	ErrNoKnobExists      = errors.New("Knob does not exists")
+	ErrKnobAlreadyExists     = errors.New("Knob already exists")
+	ErrKnobItemDoesNotExists = errors.New("Knob item does not exists on the database")
+	ErrNoKnobExists          = errors.New("Knob does not exists")
 )

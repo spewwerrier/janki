@@ -24,6 +24,8 @@ func Server() {
 		log.Panic(err)
 	}
 
+	// database.CleanDb()
+
 	api := &api.Api{
 		Users: api.Users{DB: database, Log: logger},
 		Knob:  api.Knob{DB: database, Log: logger},

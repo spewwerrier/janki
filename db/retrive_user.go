@@ -42,7 +42,7 @@ func (db *Database) RetriveUserApi(username string, password string) (string, er
 		db.log.Error("RetriveUserApi failed to retrive user" + err.Error())
 		return "", err
 	}
-	query := "select session_key from sessions where user_id = $1"
+	query := "select api_key from api where user_id = $1"
 	row := db.QueryRow(query, id)
 	var api_key string
 	err = row.Scan(&api_key)
@@ -67,7 +67,7 @@ func (db *Database) RetriveHashedPassword(username string) (string, error) {
 
 func (db *Database) RetriveUserIdFromApi(api_key string) (int, error) {
 	fmt.Println("api_key ", api_key)
-	query := "select user_id from sessions where session_key = $1"
+	query := "select user_id from api where api_key = $1"
 	result := db.QueryRow(query, api_key)
 	var id int
 	err := result.Scan(&id)
@@ -86,7 +86,7 @@ func (db *Database) RetriveUser(api_key string) (UserDescription, error) {
 		return UserDescription{}, nil
 	}
 
-	query := "select users.username, usersdescriptions.creation, image_url, description, usersdescriptions.creation, sessions.session_key, sessions.creation from users inner join usersdescriptions on users.id = usersdescriptions.user_id  inner join sessions on users.id = sessions.user_id where users.id = $1"
+	query := "select users.username, usersdescriptions.creation, image_url, description, usersdescriptions.creation, api.api_key, api.creation from users inner join usersdescriptions on users.id = usersdescriptions.user_id  inner join api on users.id = api.user_id where users.id = $1"
 	row := db.QueryRow(query, id)
 	u := UserDescription{}
 	err = row.Scan(
@@ -95,8 +95,8 @@ func (db *Database) RetriveUser(api_key string) (UserDescription, error) {
 		&u.Image_url,
 		&u.Description,
 		&u.Creation,
-		&u.Session.ApiKey,
-		&u.Session.Creation,
+		&u.Api.ApiKey,
+		&u.Api.Creation,
 	)
 	if err != nil {
 		return u, err

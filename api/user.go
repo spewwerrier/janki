@@ -88,7 +88,7 @@ func (u Users) Read(w http.ResponseWriter, r *http.Request) {
 	password := r.Form.Get("password")
 	api, err := u.DB.RetriveUserApi(username, password)
 	if err != nil {
-		u.Log.ErrorHttp(http.StatusInternalServerError, "cannot retrive user session"+err.Error(), w)
+		u.Log.ErrorHttp(http.StatusInternalServerError, "cannot retrive user api"+err.Error(), w)
 		return
 	}
 	w.Write([]byte(api))

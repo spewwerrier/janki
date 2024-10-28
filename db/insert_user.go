@@ -47,8 +47,9 @@ func (db *Database) CreateNewUser(username string, password string) (string, err
 	return api_key, nil
 }
 
+// retrieves user id from the api key
 func (db *Database) GetUserId(api_key string) (int, error) {
-	query := "select user_id from sessions where session_key = $1"
+	query := "select user_id from api where api_key = $1"
 	result, err := db.Query(query, api_key)
 	if err != nil {
 		return -1, jlog.ErrDbQueryError
@@ -69,8 +70,8 @@ func (db *Database) GetUserId(api_key string) (int, error) {
 	return user_id, nil
 }
 
-func (db *Database) RegenerateSessionKey(username string, password string) (string, error) {
-	query := "delete from sessions where id = $1"
+func (db *Database) RegenerateApiKey(username string, password string) (string, error) {
+	query := "delete from api where id = $1"
 	id, err := db.RetriveUserIdFromCredentials(username, password)
 	if err != nil {
 		return "", err
@@ -97,11 +98,11 @@ func (db *Database) GenerateApiKey(username string, password string) (string, er
 		return "", err
 	}
 
-	sql := "insert into sessions (session_key, user_id) values ($1, $2)"
+	sql := "insert into api (api_key, user_id) values ($1, $2)"
 	_, err = db.Execute(sql, api_key, id)
 	fmt.Println(api_key)
 	if err != nil {
-		db.log.Error("error while inserting session key in generatesessionkey\n" + err.Error())
+		db.log.Error("GenerateApiKey error while inserting api key in api key\n" + err.Error())
 		return "", jlog.ErrDbExecError
 	}
 

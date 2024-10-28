@@ -8,8 +8,26 @@ ref users(id) | creation | image_url | description | existing_knobs
 whenever a new knob gets created it is stored here
 id | ref users(id) | knob_name | creation | forkof knob(id) | is public
 
-# knob_descriptions
-ref knob (id) | topics | todo | tor | refs | urls | ques | description | suggestions
+# knob_references
+ref knob (id) | references
 
-# session
-id | session_key | creation | ref users(id)
+# knob_topics
+ref knob(id) | topics
+
+#knob_todo
+ref knob(id) | todo
+
+#knob_tor
+ref knob(id) | tor
+
+#knob_urls
+ref knob(id) | urls
+
+#knob_ques
+ref knob(id) | ques
+
+#knob_suggestions
+ref knob(id) | suggestions
+
+# api
+id | api_key | creation | ref users(id)
